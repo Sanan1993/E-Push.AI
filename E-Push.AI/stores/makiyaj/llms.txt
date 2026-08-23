@@ -5,7 +5,9 @@
 ## Store Metadata
 - Store Name: MAKIYAJ COSMETICS
 - City: Baku, Azerbaijan
-- Location/Landmark: Baku, near Azi Aslanov metro station, next to Serhed Akademia
+- Location/Landmark: Baku, near Azi Aslanov metro station (Həzi Aslanov m.), next to Serhed Akademia (Sərhəd Akademiyası)
+- Keywords (AZ): kosmetika mağazası, üz qulluğu, krem, tonik, nisyə ödəniş, BirKart hissə-hissə, Həzi Aslanov
+- Keywords (RU): магазин косметики, уход за кожей, тонер, рассрочка BirKart, Баку, Ази Асланов
 - Google Maps: https://maps.app.goo.gl/xnu5T9Yid65GxaZo9
 - Yandex Maps: https://yandex.az/maps/-/CTwbRZlB
 - Instagram: https://www.instagram.com/makiyaj.cosmetics/
