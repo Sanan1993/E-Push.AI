@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import urllib.parse
 
@@ -22,7 +23,11 @@ def build_whatsapp_link(product_name, price):
 
 def generate():
     print("Скачиваем базу из Google Sheets...")
-    df = pd.read_csv(CSV_URL)
+    try:
+        df = pd.read_csv(CSV_URL)
+    except Exception as e:
+        print(f"Ошибка при скачивании таблицы: {e}")
+        raise e
     
     # Заголовок с условиями магазина
     header = f"""# {STORE_NAME} - Official Product Index
@@ -49,7 +54,6 @@ def generate():
     valid_count = 0
 
     for idx, row in df.iterrows():
-        # Читаем столбцы из Google Таблицы: Mal, Ştrixkod, Satış, Əsas Anbar
         name = str(row.get('Mal', '')).strip()
         barcode = str(row.get('Ştrixkod', '')).strip()
         price = str(row.get('Satış', '')).strip()
@@ -72,8 +76,11 @@ def generate():
 
     full_content = header + products_txt
     
-    # Сохраняем в папку stores/makiyaj/llms.txt
-    file_path = "stores/makiyaj/llms.txt"
+    # Автоматически создаем директорию, если её нет
+    output_dir = os.path.join("stores", "makiyaj")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    file_path = os.path.join(output_dir, "llms.txt")
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(full_content)
         
