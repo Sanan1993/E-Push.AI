@@ -1,0 +1,33 @@
+name: Daily Catalog Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-llms:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install requirements
+        run: |
+          pip install pandas requests
+
+      - name: Run generator script
+        run: python generate_llms.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add stores/makiyaj/llms.txt
+          git commit -m "Auto-update llms.txt from Google Sheets" || exit 0
+          git push
