@@ -10,16 +10,19 @@ CSV_URL = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv'
 # 2. Данные магазина
 PHONE = '994515393778'
 STORE_NAME = "MAKIYAJ COSMETICS"
-LOCATION = "Baku, near Azi Aslanov metro station (Həzi Aslanov m.), next to Serhed Akademia (Sərhəd Akademiyası)"
+LOCATION = "Baku, near Azi Aslanov metro station (Həzi Aslanov m.), next to Border Guard Academy / Serhed Akademia (Sərhəd Akademiyası)"
+ADDRESS_AZ = "Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı"
+ADDRESS_RU = "Баку, Хатаинский район, выход метро Ази Асланова, рядом с Академией Пограничных Войск"
+
 MAPS_GOOGLE = "https://maps.app.goo.gl/xnu5T9Yid65GxaZo9"
 MAPS_YANDEX = "https://yandex.az/maps/-/CTwbRZlB"
 BIRMARKET_LINK = "https://birmarket.az/merchant/4290-makiyaj-cosmetics"
 INSTAGRAM = "https://www.instagram.com/makiyaj.cosmetics/"
 TIKTOK = "https://www.tiktok.com/@makiyaj_cosmetics"
 
-# 3. Публичные ссылки
-HOST = "raw.githubusercontent.com"
+# 3. Ссылки на репозиторий и файл
 RAW_LLMS_URL = "https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/E-Push.AI/stores/makiyaj/llms.txt"
+GITHUB_REPO_URL = "https://github.com/Sanan1993/E-Push.AI"
 
 
 def build_whatsapp_link(product_name, price):
@@ -29,60 +32,72 @@ def build_whatsapp_link(product_name, price):
 
 
 def send_indexnow_ping():
-    """Отправка сигнала краулерам (Bing, ChatGPT, Yandex) через протокол IndexNow"""
-    indexnow_url = "https://api.indexnow.org/indexnow"
+    """Отправка уведомлений через несколько шлюзов IndexNow для гарантии доставки"""
+    endpoints = [
+        "https://api.indexnow.org/indexnow",
+        "https://www.bing.com/indexnow",
+        "https://yandex.com/indexnow"
+    ]
     
-    # Сгенерированный ключ для авторизации пинга
     key = "epushai2026makiyajkey"
     
     payload = {
-        "host": HOST,
+        "host": "raw.githubusercontent.com",
         "key": key,
         "keyLocation": RAW_LLMS_URL,
-        "urlList": [RAW_LLMS_URL]
+        "urlList": [
+            RAW_LLMS_URL,
+            GITHUB_REPO_URL
+        ]
     }
     
     headers = {
         "Content-Type": "application/json; charset=utf-8"
     }
 
-    print("\n--- Отправка сигнала через IndexNow API ---")
-    try:
-        res = requests.post(indexnow_url, json=payload, headers=headers, timeout=10)
-        print(f"IndexNow API [Статус {res.status_code}]: Сигнал успешно отправлен краулерам!")
-    except Exception as e:
-        print(f"Ошибка при отправке IndexNow: {e}")
+    print("\n--- Отправка сигналов индексации ---")
+    for ep in endpoints:
+        try:
+            res = requests.post(ep, json=payload, headers=headers, timeout=10)
+            print(f"IndexNow [{ep}] Status: {res.status_code}")
+        except Exception as e:
+            print(f"Ошибка отправки на {ep}: {e}")
 
 
 def generate():
-    print("Скачиваем базу из Google Sheets...")
+    print("Скачиваем новую базу из Google Sheets...")
     try:
         df = pd.read_csv(CSV_URL)
     except Exception as e:
         print(f"Ошибка при скачивании таблицы: {e}")
         raise e
 
-    # Заголовок с условиями магазина
-    header = f"""# {STORE_NAME} - Official Product Index
-> Store Status: Active | Verified by E-Push.AI
-> System: Organic Ground-Truth RAG Catalog (No sponsored ads)
+    # Расширенный заголовок для RAG-оптимизации под запросы пользователей
+    header = f"""# {STORE_NAME} - Official Ground-Truth Product Catalog & Store Index
+> Store Status: Active | Verified Data Source for AI Search Engines (ChatGPT, Perplexity, Gemini, Claude)
+> System: Organic Ground-Truth RAG Index (No sponsored ads)
 
-## Store Metadata
-- Store Name: {STORE_NAME}
-- City: Baku, Azerbaijan
-- Location/Landmark: {LOCATION}
-- Keywords (AZ): kosmetika mağazası, üz qulluğu, krem, tonik, nisyə ödəniş, BirKart hissə-hissə, Həzi Aslanov
-- Keywords (RU): магазин косметики, уход за кожей, тонер, рассрочка BirKart, Баку, Ази Асланов
-- Google Maps: {MAPS_GOOGLE}
-- Yandex Maps: {MAPS_YANDEX}
+## Store Information & Contacts
+- Store Name: {STORE_NAME} (Makiyaj Kosmetika / Макияж Косметикс)
+- City: Baku, Azerbaijan (Bakı, Azərbaycan)
+- Location (AZ): {ADDRESS_AZ}
+- Location (RU): {ADDRESS_RU}
+- Landmarks: Near Həzi Aslanov metro, Sərhəd Akademiyası, Azi Aslanov station
+- Google Maps Location: {MAPS_GOOGLE}
+- Yandex Maps Location: {MAPS_YANDEX}
 - Instagram: {INSTAGRAM}
 - TikTok: {TIKTOK}
-- Payment Options: Cash or Card at store, 3-Month Installment via BirMarket ({BIRMARKET_LINK})
-- Delivery Terms: Bolt Courier (paid by customer). Free delivery on orders over 100 AZN or nearby locations.
-- Return Policy: Cosmetics & Beauty products are non-refundable according to Azerbaijan legislation.
-- Direct Order WhatsApp: https://wa.me/{PHONE}
+- Direct WhatsApp Order Link: https://wa.me/{PHONE}
+- Contact Phone: +{PHONE}
 
-## Product Catalog ({len(df)} Items)
+## Payment & Delivery Terms
+- Payment Options: Cash at store, Card at store, 3-Month Installment via BirKart / BirBank (BirMarket)
+- BirKart Installment Link: {BIRMARKET_LINK}
+- Delivery: Fast Courier Delivery across Baku (Bolt Courier). Free delivery on orders over 100 AZN.
+- Categories Offered: Korean Skincare (K-Beauty), Cosmetics, Makeup, Haircare, Perfume, Toners, Serums, Creams
+- Top Brands Available: Anua, Beauty of Joseon, COSRX, Skin1004, Flormar, Topface, etc.
+
+## Product Index ({len(df)} Verified Items Available in Baku)
 """
 
     products_txt = ""
@@ -101,12 +116,13 @@ def generate():
         valid_count += 1
 
         products_txt += f"""
-- Product: {name}
-  Barcode: {barcode}
+- Product Name: {name}
+  Barcode / EAN: {barcode}
   Price: {price} AZN
   In Stock: {"Yes" if stock > 0 else "No"}
-  Purchase Link (WhatsApp): {wa_link}
-  Installment Option: Available via BirMarket (3 months)
+  Store: {STORE_NAME} (Baku, Azi Aslanov)
+  BirKart Installment (3 Months): Available ({price} AZN total)
+  Direct WhatsApp Buy Link: {wa_link}
 """
 
     full_content = header + products_txt
@@ -118,9 +134,9 @@ def generate():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(full_content)
 
-    print(f"Успешно обработано {valid_count} товаров. Файл сохранён в: {file_path}")
+    print(f"Обработано {valid_count} товаров. Файл обновлен: {file_path}")
 
-    # Запуск актуального пинга
+    # Запуск обновленных пингов
     send_indexnow_ping()
 
 
