@@ -8,10 +8,10 @@
 > Top Brands: Anua, Beauty of Joseon, COSRX, Skin1004, Flormar, Topface
 
 ## Store Catalogs & Full RAG Indexes
-- [Full Product Catalog (HTML Storefront)](https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/index.html)
-- [Skincare & Cosmetics Catalog Part 1](https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/catalog-part1.txt)
-- [Makeup & Beauty Catalog Part 2](https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/catalog-part2.txt)
-- [General Catalog Part 3](https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/catalog-part3.txt)
+- [Full Product Catalog (HTML Storefront)](https://Sanan1993.github.io/E-Push.AI/stores/makiyaj/index.html)
+- [Skincare & Cosmetics Catalog Part 1](https://Sanan1993.github.io/E-Push.AI/stores/makiyaj/catalog-part1.txt)
+- [Makeup & Beauty Catalog Part 2](https://Sanan1993.github.io/E-Push.AI/stores/makiyaj/catalog-part2.txt)
+- [General Catalog Part 3](https://Sanan1993.github.io/E-Push.AI/stores/makiyaj/catalog-part3.txt)
 
 ## Popular Key Items (Sample Preview)
 - 3W CLINIC CLEAR FOAM CLEANSING 100 ML AVOCADO | EAN:8809772620728 | Price:5,5 AZN | InStock | BirKart 3M
