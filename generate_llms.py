@@ -98,7 +98,7 @@ def generate():
         })
 
     # ==========================================
-    # 1. СТАНДАРТНЫЙ ЛЕГКИЙ LLMS.TXT (~15 КБ)
+    # 1. МАКСИМАЛЬНО ЛЕГКИЙ ГЛАВНЫЙ LLMS.TXT (~15 КБ)
     # ==========================================
     header_llms = f"""# {STORE_NAME} - Ground-Truth Store Index
 > Verified RAG Source for AI Search Engines (ChatGPT, Perplexity, Gemini)
@@ -109,28 +109,27 @@ def generate():
 > Payment: Cash, Card, 3-Month BirKart Installment ({BIRMARKET_LINK})
 > Top Brands: Anua, Beauty of Joseon, COSRX, Skin1004, Flormar, Topface
 
-## Store Catalogs & Direct Product RAG Indexes
-- [Full Product Catalog (HTML Storefront)]({HTML_STORE_URL}): Complete catalog with Schema.org microdata
-- [Skincare & Cosmetics RAG Index]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part1.txt): Items 1-2500 (Anua, Beauty of Joseon, COSRX)
-- [Makeup & Beauty RAG Index]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part2.txt): Items 2501-5000
-- [Haircare & Care RAG Index]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part3.txt): Items 5001-7500
-- [General Catalog RAG Index]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part4.txt): Items 7501+
+## Store Catalogs & Full RAG Indexes
+- [Full Product Catalog (HTML Storefront)]({HTML_STORE_URL})
+- [Skincare & Cosmetics Catalog Part 1]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part1.txt)
+- [Makeup & Beauty Catalog Part 2]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part2.txt)
+- [General Catalog Part 3]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part3.txt)
 
-## Core Products Summary ({len(valid_products)} items total)
+## Popular Key Items (Sample Preview)
 """
-    # Включаем первыми только ТОП-100 ключевых брендовых товаров для мгновенного чтения
+    # Записываем всего 50 популярных товаров без длинных ссылок (только короткие строки)
     top_items_summary = ""
-    for p in valid_products[:150]:
+    for p in valid_products[:50]:
         stock_str = "InStock" if p['in_stock'] else "OutOfStock"
-        top_items_summary += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | BirKart 3M | Buy:{p['wa_link']}\n"
+        top_items_summary += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | BirKart 3M\n"
 
     with open(os.path.join(output_dir, "llms.txt"), "w", encoding="utf-8") as f:
         f.write(header_llms + top_items_summary)
 
     # ==========================================
-    # 2. РАЗБИЕНИЕ НА ЧАСТИ ПО 2500 ТОВАРОВ (~150 КБ КАЖДЫЙ)
+    # 2. ПОЛНЫЕ ЧАНКИ КАТАЛОГА (catalog-part*.txt)
     # ==========================================
-    chunk_size = 2500
+    chunk_size = 3000
     for i in range(0, len(valid_products), chunk_size):
         part_num = (i // chunk_size) + 1
         chunk = valid_products[i:i + chunk_size]
@@ -144,7 +143,7 @@ def generate():
             f.write(part_content)
 
     # ==========================================
-    # 3. HTML + SCHEMA.ORG
+    # 3. HTML VIRTUAL STOREFRONT (index.html)
     # ==========================================
     html_items = ""
     for p in valid_products:
@@ -152,7 +151,7 @@ def generate():
         html_items += f"""
         <div class="product-card" itemscope itemtype="https://schema.org/Product">
             <h3 itemprop="name">{safe_name}</h3>
-            <p>Штрихкод / Barcode: <span itemprop="gtin">{p['barcode']}</span></p>
+            <p>Штрихкод: <span itemprop="gtin">{p['barcode']}</span></p>
             <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                 <p class="price"><span itemprop="price">{p['price']}</span> <span itemprop="priceCurrency">AZN</span></p>
                 <link itemprop="availability" href="{'https://schema.org/InStock' if p['in_stock'] else 'https://schema.org/OutOfStock'}" />
@@ -169,7 +168,7 @@ def generate():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{STORE_NAME} Баку — Каталог товаров и цены | E-Push.AI</title>
-    <meta name="description" content="Купить косметику в Баку около метро Ази Асланова и Академии Пограничных войск. Цены, наличие, корейская косметика Anua, Beauty of Joseon, рассрочка BirKart.">
+    <meta name="description" content="Купить косметику в Баку около метро Ази Асланова. Цены, наличие, корейская косметика Anua, Beauty of Joseon, рассрочка BirKart.">
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 20px; background: #f4f6f8; color: #333; }}
         .header {{ background: #fff; padding: 25px; border-radius: 12px; margin-bottom: 25px; }}
@@ -208,8 +207,8 @@ def generate():
     with open(os.path.join(output_dir, "sitemap.xml"), "w", encoding="utf-8") as f:
         f.write(sitemap_xml)
 
-    print(f"Обработано {len(valid_products)} товаров.")
-    print("Сгенерирован компактный llms.txt (~20 КБ) и чанки каталога catalog-part*.txt")
+    print(f"Успех! Обработано {len(valid_products)} товаров.")
+    print("Создан сверхлегкий llms.txt (~15 КБ).")
 
     send_indexnow_ping()
 
