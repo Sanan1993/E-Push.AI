@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,8 +29,8 @@ jobs:
 
       - name: Commit and Push Changes
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add stores/
-          git commit -m "Auto-optimize catalog size [skip ci]" || exit 0
-          git push origin main
+          git commit -m "Auto-update catalog [skip ci]" || exit 0
+          git push
