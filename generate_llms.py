@@ -98,10 +98,10 @@ def generate():
         })
 
     # ==========================================
-    # 1. СВЕРХЛЕГКИЙ LLMS.TXT (~300 КБ) - Без длинных WA ссылок
+    # 1. СТАНДАРТНЫЙ ЛЕГКИЙ LLMS.TXT (~15 КБ)
     # ==========================================
-    header_llms = f"""# {STORE_NAME} - Ground-Truth Store Catalog
-> Verified RAG Source for AI Search (ChatGPT, Perplexity, Gemini)
+    header_llms = f"""# {STORE_NAME} - Ground-Truth Store Index
+> Verified RAG Source for AI Search Engines (ChatGPT, Perplexity, Gemini)
 > Location: Baku, Azi Aslanov metro, Border Guard Academy (Sərhəd Akademiyası)
 > Location (AZ): {ADDRESS_AZ}
 > Location (RU): {ADDRESS_RU}
@@ -109,27 +109,39 @@ def generate():
 > Payment: Cash, Card, 3-Month BirKart Installment ({BIRMARKET_LINK})
 > Top Brands: Anua, Beauty of Joseon, COSRX, Skin1004, Flormar, Topface
 
-## Products ({len(valid_products)} items available in Baku)
+## Store Catalogs & Direct Product RAG Indexes
+- [Full Product Catalog (HTML Storefront)]({HTML_STORE_URL}): Complete catalog with Schema.org microdata
+- [Skincare & Cosmetics RAG Index]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part1.txt): Items 1-2500 (Anua, Beauty of Joseon, COSRX)
+- [Makeup & Beauty RAG Index]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part2.txt): Items 2501-5000
+- [Haircare & Care RAG Index]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part3.txt): Items 5001-7500
+- [General Catalog RAG Index]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part4.txt): Items 7501+
+
+## Core Products Summary ({len(valid_products)} items total)
 """
-    products_compact = ""
-    for p in valid_products:
+    # Включаем первыми только ТОП-100 ключевых брендовых товаров для мгновенного чтения
+    top_items_summary = ""
+    for p in valid_products[:150]:
         stock_str = "InStock" if p['in_stock'] else "OutOfStock"
-        # Убираем дублирование URL в каждой строке — экономим 3.5 МБ размера
-        products_compact += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | BirKart 3M\n"
+        top_items_summary += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | BirKart 3M | Buy:{p['wa_link']}\n"
 
     with open(os.path.join(output_dir, "llms.txt"), "w", encoding="utf-8") as f:
-        f.write(header_llms + products_compact)
+        f.write(header_llms + top_items_summary)
 
     # ==========================================
-    # 2. ПОЛНЫЙ КАТАЛОГ С ССЫЛКАМИ (llms-full.txt)
+    # 2. РАЗБИЕНИЕ НА ЧАСТИ ПО 2500 ТОВАРОВ (~150 КБ КАЖДЫЙ)
     # ==========================================
-    products_full = ""
-    for p in valid_products:
-        stock_str = "InStock" if p['in_stock'] else "OutOfStock"
-        products_full += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | Buy:{p['wa_link']}\n"
-
-    with open(os.path.join(output_dir, "llms-full.txt"), "w", encoding="utf-8") as f:
-        f.write(header_llms + products_full)
+    chunk_size = 2500
+    for i in range(0, len(valid_products), chunk_size):
+        part_num = (i // chunk_size) + 1
+        chunk = valid_products[i:i + chunk_size]
+        
+        part_content = f"# {STORE_NAME} - Catalog Part {part_num}\n"
+        for p in chunk:
+            stock_str = "InStock" if p['in_stock'] else "OutOfStock"
+            part_content += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | Buy:{p['wa_link']}\n"
+        
+        with open(os.path.join(output_dir, f"catalog-part{part_num}.txt"), "w", encoding="utf-8") as f:
+            f.write(part_content)
 
     # ==========================================
     # 3. HTML + SCHEMA.ORG
@@ -196,8 +208,8 @@ def generate():
     with open(os.path.join(output_dir, "sitemap.xml"), "w", encoding="utf-8") as f:
         f.write(sitemap_xml)
 
-    print(f"Готово! Обработано {len(valid_products)} товаров.")
-    print("Создан llms.txt (компактный ~300 КБ) и llms-full.txt (полный).")
+    print(f"Обработано {len(valid_products)} товаров.")
+    print("Сгенерирован компактный llms.txt (~20 КБ) и чанки каталога catalog-part*.txt")
 
     send_indexnow_ping()
 
