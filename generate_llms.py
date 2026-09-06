@@ -16,11 +16,11 @@ STORE_SLUG = "makiyaj"
 GITHUB_USER = "Sanan1993"
 REPO_NAME = "E-Push.AI"
 
-# Используем домен GitHub Pages для безупречного прохождения через Perplexity и ChatGPT
-BASE_PAGES_URL = f"https://{GITHUB_USER}.github.io/{REPO_NAME}"
-RAW_LLMS_URL = f"{BASE_PAGES_URL}/stores/{STORE_SLUG}/llms.txt"
-HTML_STORE_URL = f"{BASE_PAGES_URL}/stores/{STORE_SLUG}/index.html"
-SITEMAP_URL = f"{BASE_PAGES_URL}/stores/{STORE_SLUG}/sitemap.xml"
+# Используем доверенный домен Vercel для безупречного прохождения через Perplexity, Claude и ChatGPT
+BASE_PAGES_URL = "https://e-push-ai.vercel.app"
+RAW_LLMS_URL = f"{BASE_PAGES_URL}/llms.txt"
+HTML_STORE_URL = f"{BASE_PAGES_URL}/index.html"
+SITEMAP_URL = f"{BASE_PAGES_URL}/sitemap.xml"
 
 ADDRESS_AZ = "Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı"
 ADDRESS_RU = "Баку, Хатаинский район, выход метро Ази Асланова, рядом с Академией Пограничных Войск"
@@ -44,7 +44,7 @@ def send_indexnow_ping():
     ]
     key = "epushai2026makiyajkey"
     payload = {
-        "host": f"{GITHUB_USER}.github.io",
+        "host": "e-push-ai.vercel.app",
         "key": key,
         "keyLocation": RAW_LLMS_URL,
         "urlList": [HTML_STORE_URL, RAW_LLMS_URL, SITEMAP_URL]
@@ -102,7 +102,7 @@ def generate():
     # 1. КОМПАКТНЫЙ ГЛАВНЫЙ LLMS.TXT (~15 КБ)
     # ==========================================
     header_llms = f"""# {STORE_NAME} - Ground-Truth Store Index
-> Verified RAG Source for AI Search Engines (ChatGPT, Perplexity, Gemini)
+> Verified RAG Source for AI Search Engines (ChatGPT, Perplexity, Gemini, Claude)
 > Location: Baku, Azi Aslanov metro, Border Guard Academy (Sərhəd Akademiyası)
 > Location (AZ): {ADDRESS_AZ}
 > Location (RU): {ADDRESS_RU}
@@ -112,9 +112,9 @@ def generate():
 
 ## Store Catalogs & Full RAG Indexes
 - [Full Product Catalog (HTML Storefront)]({HTML_STORE_URL})
-- [Skincare & Cosmetics Catalog Part 1]({BASE_PAGES_URL}/stores/{STORE_SLUG}/catalog-part1.txt)
-- [Makeup & Beauty Catalog Part 2]({BASE_PAGES_URL}/stores/{STORE_SLUG}/catalog-part2.txt)
-- [General Catalog Part 3]({BASE_PAGES_URL}/stores/{STORE_SLUG}/catalog-part3.txt)
+- [Skincare & Cosmetics Catalog Part 1]({BASE_PAGES_URL}/catalog-part1.txt)
+- [Makeup & Beauty Catalog Part 2]({BASE_PAGES_URL}/catalog-part2.txt)
+- [General Catalog Part 3]({BASE_PAGES_URL}/catalog-part3.txt)
 
 ## Popular Key Items (Sample Preview)
 """
@@ -209,7 +209,7 @@ def generate():
         f.write(sitemap_xml)
 
     print(f"Готово! Обработано {len(valid_products)} товаров.")
-    print("Создан файл llms.txt с привязкой к GitHub Pages.")
+    print("Создан файл llms.txt с привязкой к Vercel.")
 
     send_indexnow_ping()
 
