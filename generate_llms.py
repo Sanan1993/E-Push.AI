@@ -16,7 +16,6 @@ STORE_SLUG = "makiyaj"
 GITHUB_USER = "Sanan1993"
 REPO_NAME = "E-Push.AI"
 
-# Прямой базовый путь
 BASE_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/main"
 RAW_LLMS_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/llms.txt"
 HTML_STORE_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/index.html"
@@ -28,7 +27,6 @@ ADDRESS_RU = "Баку, Хатаинский район, выход метро �
 MAPS_GOOGLE = "https://maps.app.goo.gl/xnu5T9Yid65GxaZo9"
 MAPS_YANDEX = "https://yandex.az/maps/-/CTwbRZlB"
 BIRMARKET_LINK = "https://birmarket.az/merchant/4290-makiyaj-cosmetics"
-INSTAGRAM = "https://www.instagram.com/makiyaj.cosmetics/"
 
 
 def build_whatsapp_link(product_name, price):
@@ -38,28 +36,19 @@ def build_whatsapp_link(product_name, price):
 
 
 def send_indexnow_ping():
-    """Отправка уведомлений IndexNow"""
     endpoints = [
         "https://api.indexnow.org/indexnow",
         "https://www.bing.com/indexnow",
         "https://yandex.com/indexnow"
     ]
-    
     key = "epushai2026makiyajkey"
-    
     payload = {
         "host": "raw.githubusercontent.com",
         "key": key,
         "keyLocation": RAW_LLMS_URL,
-        "urlList": [
-            HTML_STORE_URL,
-            RAW_LLMS_URL,
-            SITEMAP_URL
-        ]
+        "urlList": [HTML_STORE_URL, RAW_LLMS_URL, SITEMAP_URL]
     }
-    
     headers = {"Content-Type": "application/json; charset=utf-8"}
-
     print("\n--- Отправка сигналов индексации (IndexNow) ---")
     for ep in endpoints:
         try:
@@ -108,7 +97,9 @@ def generate():
             "wa_link": wa_link
         })
 
-    # 1. КОМПАКТНЫЙ LLMS.TXT (Сжатый синтаксис для обхода лимита в 4МБ)
+    # ==========================================
+    # 1. СВЕРХЛЕГКИЙ LLMS.TXT (~300 КБ) - Без длинных WA ссылок
+    # ==========================================
     header_llms = f"""# {STORE_NAME} - Ground-Truth Store Catalog
 > Verified RAG Source for AI Search (ChatGPT, Perplexity, Gemini)
 > Location: Baku, Azi Aslanov metro, Border Guard Academy (Sərhəd Akademiyası)
@@ -120,15 +111,29 @@ def generate():
 
 ## Products ({len(valid_products)} items available in Baku)
 """
-    products_llms_txt = ""
+    products_compact = ""
     for p in valid_products:
         stock_str = "InStock" if p['in_stock'] else "OutOfStock"
-        products_llms_txt += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | BirKart 3M | Buy:{p['wa_link']}\n"
+        # Убираем дублирование URL в каждой строке — экономим 3.5 МБ размера
+        products_compact += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | BirKart 3M\n"
 
     with open(os.path.join(output_dir, "llms.txt"), "w", encoding="utf-8") as f:
-        f.write(header_llms + products_llms_txt)
+        f.write(header_llms + products_compact)
 
-    # 2. HTML + SCHEMA.ORG
+    # ==========================================
+    # 2. ПОЛНЫЙ КАТАЛОГ С ССЫЛКАМИ (llms-full.txt)
+    # ==========================================
+    products_full = ""
+    for p in valid_products:
+        stock_str = "InStock" if p['in_stock'] else "OutOfStock"
+        products_full += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | Buy:{p['wa_link']}\n"
+
+    with open(os.path.join(output_dir, "llms-full.txt"), "w", encoding="utf-8") as f:
+        f.write(header_llms + products_full)
+
+    # ==========================================
+    # 3. HTML + SCHEMA.ORG
+    # ==========================================
     html_items = ""
     for p in valid_products:
         safe_name = html.escape(p['name'])
@@ -153,66 +158,46 @@ def generate():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{STORE_NAME} Баку — Каталог товаров и цены | E-Push.AI</title>
     <meta name="description" content="Купить косметику в Баку около метро Ази Асланова и Академии Пограничных войск. Цены, наличие, корейская косметика Anua, Beauty of Joseon, рассрочка BirKart.">
-    <meta name="keywords" content="косметика баку, ази асланов, anua баку, beauty of joseon баку, birkart kosmetika, makiyaj cosmetics">
     <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f4f6f8; color: #333; }}
-        .header {{ background: #fff; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }}
-        h1 {{ margin: 0 0 10px 0; color: #111; }}
-        .meta-info {{ line-height: 1.6; font-size: 15px; color: #555; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 20px; background: #f4f6f8; color: #333; }}
+        .header {{ background: #fff; padding: 25px; border-radius: 12px; margin-bottom: 25px; }}
+        h1 {{ margin: 0 0 10px 0; }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }}
-        .product-card {{ background: #fff; padding: 20px; border-radius: 10px; border: 1px solid #e1e4e8; display: flex; flex-direction: column; justify-content: space-between; }}
-        .product-card h3 {{ font-size: 16px; margin: 0 0 10px 0; line-height: 1.4; color: #1a1a1a; }}
-        .price {{ font-size: 20px; font-weight: bold; color: #2e7d32; margin: 10px 0; }}
+        .product-card {{ background: #fff; padding: 20px; border-radius: 10px; border: 1px solid #e1e4e8; }}
+        .price {{ font-size: 20px; font-weight: bold; color: #2e7d32; }}
         .wa-btn {{ display: block; text-align: center; background: #25D366; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; margin-top: 10px; }}
-        .wa-btn:hover {{ background: #1eb954; }}
     </style>
 </head>
 <body>
-    <div class="header" itemscope itemtype="https://schema.org/BeautySalon">
-        <h1 itemprop="name">{STORE_NAME} — Официальная витрина Баку</h1>
-        <div class="meta-info">
-            <p><strong>Город:</strong> <span itemprop="addressLocality">Баку, Азербайджан</span></p>
-            <p><strong>Адрес (AZ):</strong> {ADDRESS_AZ}</p>
-            <p><strong>Адрес (RU):</strong> {ADDRESS_RU}</p>
-            <p><strong>Ориентиры:</strong> Метро Ази Асланова (Həzi Aslanov m.), Академия Пограничных войск (Sərhəd Akademiyası)</p>
-            <p><strong>Оплата:</strong> Наличные, Карта, Рассрочка BirKart на 3 месяца</p>
-            <p><strong>Заказ:</strong> Прямой заказ в WhatsApp по кнопке у товара или по телефону +{PHONE}</p>
-        </div>
+    <div class="header">
+        <h1>{STORE_NAME} — Официальная витрина Баку</h1>
+        <p><strong>Адрес (AZ):</strong> {ADDRESS_AZ}</p>
+        <p><strong>Адрес (RU):</strong> {ADDRESS_RU}</p>
+        <p><strong>Ориентиры:</strong> Метро Ази Асланова, Академия Пограничных войск</p>
     </div>
-
-    <h2>Каталог товаров ({len(valid_products)} позиций в наличии)</h2>
-    <div class="grid">
-        {html_items}
-    </div>
+    <h2>Каталог товаров ({len(valid_products)} позиций)</h2>
+    <div class="grid">{html_items}</div>
 </body>
 </html>
 """
     with open(os.path.join(output_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    # 3. SITEMAP.XML
+    # ==========================================
+    # 4. SITEMAP.XML
+    # ==========================================
     now_str = datetime.now().strftime('%Y-%m-%d')
     sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-   <url>
-      <loc>{HTML_STORE_URL}</loc>
-      <lastmod>{now_str}</lastmod>
-      <changefreq>daily</changefreq>
-      <priority>1.0</priority>
-   </url>
-   <url>
-      <loc>{RAW_LLMS_URL}</loc>
-      <lastmod>{now_str}</lastmod>
-      <changefreq>daily</changefreq>
-      <priority>0.9</priority>
-   </url>
+   <url><loc>{HTML_STORE_URL}</loc><lastmod>{now_str}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+   <url><loc>{RAW_LLMS_URL}</loc><lastmod>{now_str}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
 </urlset>
 """
     with open(os.path.join(output_dir, "sitemap.xml"), "w", encoding="utf-8") as f:
         f.write(sitemap_xml)
 
-    print(f"Обработано {len(valid_products)} товаров.")
-    print("Файлы успешно сгенерированы в корневой папке stores/makiyaj/")
+    print(f"Готово! Обработано {len(valid_products)} товаров.")
+    print("Создан llms.txt (компактный ~300 КБ) и llms-full.txt (полный).")
 
     send_indexnow_ping()
 
