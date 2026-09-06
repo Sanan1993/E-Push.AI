@@ -1,0 +1,20 @@
+{
+  "name": "e-push-ai",
+  "version": "1.0.0",
+  "description": "Omnichannel AI-Commerce Infrastructure Engine",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "xml2js": "^0.6.2",
+    "xlsx": "^0.18.5",
+    "node-cache": "^5.1.2"
+  }
+}
