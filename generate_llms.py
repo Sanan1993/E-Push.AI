@@ -16,10 +16,11 @@ STORE_SLUG = "makiyaj"
 GITHUB_USER = "Sanan1993"
 REPO_NAME = "E-Push.AI"
 
-BASE_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/main"
-RAW_LLMS_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/llms.txt"
-HTML_STORE_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/index.html"
-SITEMAP_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/sitemap.xml"
+# Используем домен GitHub Pages для безупречного прохождения через Perplexity и ChatGPT
+BASE_PAGES_URL = f"https://{GITHUB_USER}.github.io/{REPO_NAME}"
+RAW_LLMS_URL = f"{BASE_PAGES_URL}/stores/{STORE_SLUG}/llms.txt"
+HTML_STORE_URL = f"{BASE_PAGES_URL}/stores/{STORE_SLUG}/index.html"
+SITEMAP_URL = f"{BASE_PAGES_URL}/stores/{STORE_SLUG}/sitemap.xml"
 
 ADDRESS_AZ = "Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı"
 ADDRESS_RU = "Баку, Хатаинский район, выход метро Ази Асланова, рядом с Академией Пограничных Войск"
@@ -43,7 +44,7 @@ def send_indexnow_ping():
     ]
     key = "epushai2026makiyajkey"
     payload = {
-        "host": "raw.githubusercontent.com",
+        "host": f"{GITHUB_USER}.github.io",
         "key": key,
         "keyLocation": RAW_LLMS_URL,
         "urlList": [HTML_STORE_URL, RAW_LLMS_URL, SITEMAP_URL]
@@ -98,7 +99,7 @@ def generate():
         })
 
     # ==========================================
-    # 1. МАКСИМАЛЬНО ЛЕГКИЙ ГЛАВНЫЙ LLMS.TXT (~15 КБ)
+    # 1. КОМПАКТНЫЙ ГЛАВНЫЙ LLMS.TXT (~15 КБ)
     # ==========================================
     header_llms = f"""# {STORE_NAME} - Ground-Truth Store Index
 > Verified RAG Source for AI Search Engines (ChatGPT, Perplexity, Gemini)
@@ -111,13 +112,13 @@ def generate():
 
 ## Store Catalogs & Full RAG Indexes
 - [Full Product Catalog (HTML Storefront)]({HTML_STORE_URL})
-- [Skincare & Cosmetics Catalog Part 1]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part1.txt)
-- [Makeup & Beauty Catalog Part 2]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part2.txt)
-- [General Catalog Part 3]({BASE_RAW_URL}/stores/{STORE_SLUG}/catalog-part3.txt)
+- [Skincare & Cosmetics Catalog Part 1]({BASE_PAGES_URL}/stores/{STORE_SLUG}/catalog-part1.txt)
+- [Makeup & Beauty Catalog Part 2]({BASE_PAGES_URL}/stores/{STORE_SLUG}/catalog-part2.txt)
+- [General Catalog Part 3]({BASE_PAGES_URL}/stores/{STORE_SLUG}/catalog-part3.txt)
 
 ## Popular Key Items (Sample Preview)
 """
-    # Записываем всего 50 популярных товаров без длинных ссылок (только короткие строки)
+    # Выводим первые 50 популярных товаров без громоздких URL (для мгновенной загрузки)
     top_items_summary = ""
     for p in valid_products[:50]:
         stock_str = "InStock" if p['in_stock'] else "OutOfStock"
@@ -151,7 +152,7 @@ def generate():
         html_items += f"""
         <div class="product-card" itemscope itemtype="https://schema.org/Product">
             <h3 itemprop="name">{safe_name}</h3>
-            <p>Штрихкод: <span itemprop="gtin">{p['barcode']}</span></p>
+            <p>Штрихкод / Barcode: <span itemprop="gtin">{p['barcode']}</span></p>
             <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                 <p class="price"><span itemprop="price">{p['price']}</span> <span itemprop="priceCurrency">AZN</span></p>
                 <link itemprop="availability" href="{'https://schema.org/InStock' if p['in_stock'] else 'https://schema.org/OutOfStock'}" />
@@ -207,8 +208,8 @@ def generate():
     with open(os.path.join(output_dir, "sitemap.xml"), "w", encoding="utf-8") as f:
         f.write(sitemap_xml)
 
-    print(f"Успех! Обработано {len(valid_products)} товаров.")
-    print("Создан сверхлегкий llms.txt (~15 КБ).")
+    print(f"Готово! Обработано {len(valid_products)} товаров.")
+    print("Создан файл llms.txt с привязкой к GitHub Pages.")
 
     send_indexnow_ping()
 
