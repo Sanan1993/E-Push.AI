@@ -1,7 +1,6 @@
 # MAKIYAJ COSMETICS — Ground-Truth AI Search Index
 
 Automated product catalog and storefront index for MAKIYAJ COSMETICS (Baku, Azerbaijan).
-Optimized for AI Search Engines (ChatGPT, Perplexity, Gemini, Claude) and traditional web crawlers (Bing, Google).
 
 ## Live Index URLs
 
