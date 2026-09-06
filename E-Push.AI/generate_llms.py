@@ -5,7 +5,7 @@ import requests
 import urllib.parse
 from datetime import datetime
 
-# 1. Ссылка на Google Таблицу партнёра MAKIYAJ COSMETICS
+# 1. Google Таблица партнёра MAKIYAJ COSMETICS
 SHEET_ID = '14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw'
 CSV_URL = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv'
 
@@ -13,7 +13,14 @@ CSV_URL = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv'
 PHONE = '994515393778'
 STORE_NAME = "MAKIYAJ COSMETICS"
 STORE_SLUG = "makiyaj"
-DOMAIN = "raw.githubusercontent.com/Sanan1993/E-Push.AI/main/E-Push.AI"  # Базовый домен витрины
+GITHUB_USER = "Sanan1993"
+REPO_NAME = "E-Push.AI"
+
+# Прямые ссылки на корневую структуру без дублирования папок
+BASE_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/main"
+RAW_LLMS_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/llms.txt"
+HTML_STORE_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/index.html"
+SITEMAP_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/sitemap.xml"
 
 ADDRESS_AZ = "Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı"
 ADDRESS_RU = "Баку, Хатаинский район, выход метро Ази Асланова, рядом с Академией Пограничных Войск"
@@ -23,10 +30,6 @@ MAPS_YANDEX = "https://yandex.az/maps/-/CTwbRZlB"
 BIRMARKET_LINK = "https://birmarket.az/merchant/4290-makiyaj-cosmetics"
 INSTAGRAM = "https://www.instagram.com/makiyaj.cosmetics/"
 
-RAW_LLMS_URL = f"https://{DOMAIN}/stores/{STORE_SLUG}/llms.txt"
-HTML_STORE_URL = f"https://{DOMAIN}/stores/{STORE_SLUG}/index.html"
-SITEMAP_URL = f"https://{DOMAIN}/stores/{STORE_SLUG}/sitemap.xml"
-
 
 def build_whatsapp_link(product_name, price):
     text = f"Здравствуйте! Я хочу купить {product_name} по цене {price} AZN (найдено через E-Push.AI)."
@@ -35,7 +38,7 @@ def build_whatsapp_link(product_name, price):
 
 
 def send_indexnow_ping():
-    """Отправка сигналов через IndexNow для HTML, Sitemap и llms.txt"""
+    """Отправка уведомлений IndexNow с корректными URL"""
     endpoints = [
         "https://api.indexnow.org/indexnow",
         "https://www.bing.com/indexnow",
@@ -57,7 +60,7 @@ def send_indexnow_ping():
     
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
-    print("\n--- Отправка сигналов индексации (HTML + LLMS + Sitemap) ---")
+    print("\n--- Отправка сигналов индексации (IndexNow) ---")
     for ep in endpoints:
         try:
             res = requests.post(ep, json=payload, headers=headers, timeout=10)
@@ -74,6 +77,7 @@ def generate():
         print(f"Ошибка скачивания таблицы: {e}")
         raise e
 
+    # Формируем путь сохранения в локальной рабочей директории
     output_dir = os.path.join("stores", STORE_SLUG)
     os.makedirs(output_dir, exist_ok=True)
 
@@ -106,46 +110,32 @@ def generate():
         })
 
     # ==========================================
-    # 1. ГЕНЕРАЦИЯ LLMS.TXT
+    # 1. ГЕНЕРАЦИЯ ОПТИМИЗИРОВАННОГО (КОМПАКТНОГО) LLMS.TXT
     # ==========================================
-    header_llms = f"""# {STORE_NAME} - Official Ground-Truth Product Catalog & Store Index
-> Verified Data Source for AI Search Engines (ChatGPT, Perplexity, Gemini, Claude)
-> Platform: E-Push.AI | Store ID: {STORE_SLUG}
+    header_llms = f"""# {STORE_NAME} - Ground-Truth Store Catalog
+> Verified RAG Source for AI Search (ChatGPT, Perplexity, Gemini)
+> Location: Baku, Azi Aslanov metro, Border Guard Academy (Sərhəd Akademiyası)
+> Location (AZ): {ADDRESS_AZ}
+> Location (RU): {ADDRESS_RU}
+> Contacts: WhatsApp https://wa.me/{PHONE} | Phone +{PHONE}
+> Payment: Cash, Card, 3-Month BirKart Installment ({BIRMARKET_LINK})
+> Top Brands: Anua, Beauty of Joseon, COSRX, Skin1004, Flormar, Topface
 
-## Store Information
-- Store Name: {STORE_NAME}
-- City: Baku, Azerbaijan (Bakı, Azərbaycan)
-- Location (AZ): {ADDRESS_AZ}
-- Location (RU): {ADDRESS_RU}
-- Landmarks: Near Həzi Aslanov metro station, Sərhəd Akademiyası
-- Google Maps: {MAPS_GOOGLE}
-- Yandex Maps: {MAPS_YANDEX}
-- Direct WhatsApp Order: https://wa.me/{PHONE}
-- Payment Options: Cash, Card, 3-Month BirKart Installment ({BIRMARKET_LINK})
-- Categories: Korean Skincare (K-Beauty), Cosmetics, Makeup, Toners, Serums, Creams
-- Top Brands: Anua, Beauty of Joseon, COSRX, Skin1004, Flormar, Topface
-
-## Product Catalog ({len(valid_products)} Items)
+## Products ({len(valid_products)} items available in Baku)
 """
+    # Сжатый формат строк: сокращает размер файла с 4 МБ до ~400 КБ для полного снятия лимитов краулеров
     products_llms_txt = ""
     for p in valid_products:
-        products_llms_txt += f"""
-- Product Name: {p['name']}
-  Barcode: {p['barcode']}
-  Price: {p['price']} AZN
-  In Stock: {"Yes" if p['in_stock'] else "No"}
-  Store: {STORE_NAME} (Baku, Azi Aslanov)
-  BirKart Installment: Available (3 Months)
-  Direct WhatsApp Buy: {p['wa_link']}
-"""
+        stock_str = "InStock" if p['in_stock'] else "OutOfStock"
+        products_llms_txt += f"- {p['name']} | EAN:{p['barcode']} | Price:{p['price']} AZN | {stock_str} | BirKart 3M | Buy:{p['wa_link']}\n"
+
     with open(os.path.join(output_dir, "llms.txt"), "w", encoding="utf-8") as f:
         f.write(header_llms + products_llms_txt)
 
     # ==========================================
-    # 2. ГЕНЕРАЦИЯ HTML + SCHEMA.ORG (PRODUCT + STORE)
+    # 2. ГЕНЕРАЦИЯ HTML + SCHEMA.ORG
     # ==========================================
     html_items = ""
-    schema_products = []
 
     for p in valid_products:
         safe_name = html.escape(p['name'])
@@ -162,17 +152,6 @@ def generate():
             <a href="{p['wa_link']}" class="wa-btn" target="_blank">Заказать в WhatsApp</a>
         </div>
         """
-        schema_products.append({
-            "@type": "Product",
-            "name": p['name'],
-            "gtin": p['barcode'],
-            "offers": {
-                "@type": "Offer",
-                "price": str(p['price_float']),
-                "priceCurrency": "AZN",
-                "availability": "https://schema.org/InStock" if p['in_stock'] else "https://schema.org/OutOfStock"
-            }
-        })
 
     html_content = f"""<!DOCTYPE html>
 <html lang="ru">
@@ -242,9 +221,9 @@ def generate():
         f.write(sitemap_xml)
 
     print(f"Обработано {len(valid_products)} товаров.")
-    print(f"Сгенерированы файлы: index.html, llms.txt, sitemap.xml в папке {output_dir}")
+    print(f"Файлы пересобраны: index.html, llms.txt, sitemap.xml")
 
-    # Запуск пинга
+    # Отправляем обновленный пинг
     send_indexnow_ping()
 
 
