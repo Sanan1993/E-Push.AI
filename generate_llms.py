@@ -16,7 +16,7 @@ STORE_SLUG = "makiyaj"
 GITHUB_USER = "Sanan1993"
 REPO_NAME = "E-Push.AI"
 
-# Прямые ссылки на корневую структуру без дублирования папок
+# Прямой базовый путь
 BASE_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/main"
 RAW_LLMS_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/llms.txt"
 HTML_STORE_URL = f"{BASE_RAW_URL}/stores/{STORE_SLUG}/index.html"
@@ -38,7 +38,7 @@ def build_whatsapp_link(product_name, price):
 
 
 def send_indexnow_ping():
-    """Отправка уведомлений IndexNow с корректными URL"""
+    """Отправка уведомлений IndexNow"""
     endpoints = [
         "https://api.indexnow.org/indexnow",
         "https://www.bing.com/indexnow",
@@ -77,7 +77,6 @@ def generate():
         print(f"Ошибка скачивания таблицы: {e}")
         raise e
 
-    # Формируем путь сохранения в локальной рабочей директории
     output_dir = os.path.join("stores", STORE_SLUG)
     os.makedirs(output_dir, exist_ok=True)
 
@@ -109,9 +108,7 @@ def generate():
             "wa_link": wa_link
         })
 
-    # ==========================================
-    # 1. ГЕНЕРАЦИЯ ОПТИМИЗИРОВАННОГО (КОМПАКТНОГО) LLMS.TXT
-    # ==========================================
+    # 1. КОМПАКТНЫЙ LLMS.TXT (Сжатый синтаксис для обхода лимита в 4МБ)
     header_llms = f"""# {STORE_NAME} - Ground-Truth Store Catalog
 > Verified RAG Source for AI Search (ChatGPT, Perplexity, Gemini)
 > Location: Baku, Azi Aslanov metro, Border Guard Academy (Sərhəd Akademiyası)
@@ -123,7 +120,6 @@ def generate():
 
 ## Products ({len(valid_products)} items available in Baku)
 """
-    # Сжатый формат строк: сокращает размер файла с 4 МБ до ~400 КБ для полного снятия лимитов краулеров
     products_llms_txt = ""
     for p in valid_products:
         stock_str = "InStock" if p['in_stock'] else "OutOfStock"
@@ -132,11 +128,8 @@ def generate():
     with open(os.path.join(output_dir, "llms.txt"), "w", encoding="utf-8") as f:
         f.write(header_llms + products_llms_txt)
 
-    # ==========================================
-    # 2. ГЕНЕРАЦИЯ HTML + SCHEMA.ORG
-    # ==========================================
+    # 2. HTML + SCHEMA.ORG
     html_items = ""
-
     for p in valid_products:
         safe_name = html.escape(p['name'])
         html_items += f"""
@@ -197,9 +190,7 @@ def generate():
     with open(os.path.join(output_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    # ==========================================
-    # 3. ГЕНЕРАЦИЯ SITEMAP.XML
-    # ==========================================
+    # 3. SITEMAP.XML
     now_str = datetime.now().strftime('%Y-%m-%d')
     sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -221,9 +212,8 @@ def generate():
         f.write(sitemap_xml)
 
     print(f"Обработано {len(valid_products)} товаров.")
-    print(f"Файлы пересобраны: index.html, llms.txt, sitemap.xml")
+    print("Файлы успешно сгенерированы в корневой папке stores/makiyaj/")
 
-    # Отправляем обновленный пинг
     send_indexnow_ping()
 
 
