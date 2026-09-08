@@ -1,38 +1,13 @@
 import os
-import re
 import sys
 import urllib.parse
 import pandas as pd
 
+# Google Sheets CSV URL
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv"
 STORE_NAME = "Makiyaj Cosmetics"
 STORE_SLUG = "makiyaj"
-PART_SIZE = 2500
-
-
-def clean_title(val):
-  if pd.isna(val):
-    return None
-  t = str(val).strip()
-  if re.search(
-      r"Anbar|Склад|Итого|Total|Əsas", t, flags=re.IGNORECASE
-  ):
-    return None
-  if not re.search(r"[a-zA-Zа-яА-ЯəƏıIöÖğĞşŞçÇüÜ]", t):
-    return None
-  return t
-
-
-def clean_price(val):
-  if pd.isna(val):
-    return "По запросу"
-  try:
-    p = float(str(val).replace(",", ".").replace(" ", "").strip())
-    if p > 10000 or p <= 0:
-      return "По запросу"
-    return f"{p:.2f} AZN"
-  except ValueError:
-    return "По запросу"
+PART_SIZE = 1500  # Делим по 1500 строк для гарантированной генерации частей
 
 
 def run():
@@ -47,31 +22,37 @@ def run():
     print("Ошибка: Таблица пустая!")
     sys.exit(1)
 
-  col_t, col_p = (
-      df.columns[0],
-      df.columns[1] if len(df.columns) > 1 else df.columns[0],
-  )
-  for c in df.columns:
-    c_lower = str(c).lower()
-    if any(k in c_lower for k in ["название", "наименование", "title", "ad"]):
-      col_t = c
-    if any(k in c_lower for k in ["цена", "розница", "price", "qiymət"]):
-      col_p = c
+  # Прямой выбор первых двух колонок (Колонка 0: Название, Колонка 1: Цена)
+  col_t = df.columns[0]
+  col_p = df.columns[1] if len(df.columns) > 1 else df.columns[0]
 
   items = []
   for _, r in df.iterrows():
-    t, p = clean_title(r.get(col_t)), clean_price(r.get(col_p))
-    if t:
-      items.append({"title": t, "price": p})
+    raw_title = str(r.get(col_t)).strip() if pd.notna(r.get(col_t)) else ""
+    raw_price = str(r.get(col_p)).strip() if pd.notna(r.get(col_p)) else ""
 
-  print(f"Обработано товаров: {len(items)}")
+    # Игнорируем пустые элементы и служебные строки "nan"
+    if not raw_title or raw_title.lower() in ["nan", "none"]:
+      continue
 
-  cards, llms_all_lines = [], []
+    # Форматируем цену
+    price_val = raw_price if raw_price and raw_price.lower() != "nan" else "По запросу"
+    if price_val != "По запросу" and "azn" not in price_val.lower():
+      price_val = f"{price_val} AZN"
+
+    items.append({"title": raw_title, "price": price_val})
+
+  print(f"Успешно обработано товаров: {len(items)}")
+
+  cards = []
+  llms_all_lines = []
+
   for i in items:
     wa_msg = urllib.parse.quote(
         f"Salam! {STORE_NAME} - {i['title']} ({i['price']}) almaq istəyirəm."
     )
     wa_link = f"https://wa.me/994500000000?text={wa_msg}"
+
     cards.append(f"""
         <div class="card">
             <div class="title">{i['title']}</div>
@@ -88,10 +69,10 @@ def run():
     <title>{STORE_NAME}</title>
     <style>
         body {{ font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }}
-        h1 {{ text-align: center; color: #111; }}
+        h1 {{ text-align: center; color: #111; margin-bottom: 25px; }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }}
         .card {{ background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; }}
-        .title {{ font-size: 14px; font-weight: 600; margin-bottom: 8px; }}
+        .title {{ font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #222; }}
         .price {{ font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 10px; }}
         .btn {{ text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 8px; border-radius: 5px; font-weight: bold; font-size: 13px; }}
     </style>
@@ -102,69 +83,62 @@ def run():
 </body>
 </html>"""
 
-  # Директории публикации
-  targets = [".", "public", f"stores/{STORE_SLUG}", f"public/stores/{STORE_SLUG}"]
-  for d in targets:
-    os.makedirs(d, exist_ok=True)
+  # Создаем директории
+  store_dir = f"stores/{STORE_SLUG}"
+  os.makedirs(store_dir, exist_ok=True)
 
   # 1. Сохраняем HTML
-  for path in [
-      "index.html",
-      "public/index.html",
-      f"stores/{STORE_SLUG}/index.html",
-      f"public/stores/{STORE_SLUG}/index.html",
-  ]:
-    with open(path, "w", encoding="utf-8") as f:
-      f.write(html_content)
+  with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+  with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
 
-  # 2. Сохраняем llms.txt
+  # 2. Сохраняем llms.txt и llms-full.txt
   full_llms = (
       f"# {STORE_NAME}\nLocation: Baku, Azerbaijan\nTotal:"
       f" {len(items)}\n\n"
       + "\n".join(llms_all_lines)
   )
-  for path in [
-      "llms.txt",
-      "public/llms.txt",
-      f"stores/{STORE_SLUG}/llms.txt",
-      f"stores/{STORE_SLUG}/llms-full.txt",
-      f"public/stores/{STORE_SLUG}/llms.txt",
-      f"public/stores/{STORE_SLUG}/llms-full.txt",
-  ]:
-    with open(path, "w", encoding="utf-8") as f:
-      f.write(full_llms)
+  with open("llms.txt", "w", encoding="utf-8") as f:
+    f.write(full_llms)
+  with open(f"{store_dir}/llms.txt", "w", encoding="utf-8") as f:
+    f.write(full_llms)
+  with open(f"{store_dir}/llms-full.txt", "w", encoding="utf-8") as f:
+    f.write(full_llms)
 
-  # 3. Генерируем части catalog-part1.txt...
+  # 3. Генерируем части catalog-part1.txt, catalog-part2.txt...
   part_num = 1
   for start_idx in range(0, len(llms_all_lines), PART_SIZE):
     chunk = llms_all_lines[start_idx : start_idx + PART_SIZE]
-    part_content = f"# {STORE_NAME} - Part {part_num}\n\n" + "\n".join(chunk)
-    for p_dir in [f"stores/{STORE_SLUG}", f"public/stores/{STORE_SLUG}"]:
-      with open(
-          os.path.join(p_dir, f"catalog-part{part_num}.txt"),
-          "w",
-          encoding="utf-8",
-      ) as f:
-        f.write(part_content)
+    part_content = (
+        f"# {STORE_NAME} - Part {part_num}\nTotal in part:"
+        f" {len(chunk)}\n\n"
+        + "\n".join(chunk)
+    )
+    with open(
+        f"{store_dir}/catalog-part{part_num}.txt", "w", encoding="utf-8"
+    ) as f:
+      f.write(part_content)
     part_num += 1
 
   # 4. Robots & Sitemap
   robots_txt = "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n"
-  for p in ["robots.txt", "public/robots.txt"]:
-    with open(p, "w", encoding="utf-8") as f:
-      f.write(robots_txt)
+  with open("robots.txt", "w", encoding="utf-8") as f:
+    f.write(robots_txt)
 
   sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>/ </loc></url>
-  <url><loc>/stores/makiyaj</loc></url>
+  <url><loc>/</loc></url>
+  <url><loc>/stores/makiyaj/index.html</loc></url>
   <url><loc>/stores/makiyaj/llms.txt</loc></url>
 </urlset>"""
-  for p in ["sitemap.xml", "public/sitemap.xml"]:
-    with open(p, "w", encoding="utf-8") as f:
-      f.write(sitemap_xml)
+  with open("sitemap.xml", "w", encoding="utf-8") as f:
+    f.write(sitemap_xml)
 
-  print("Все файлы сгенерированы универсально!")
+  print(
+      "Скрипт выполнен успешно! Сформировано частей каталога:"
+      f" {part_num - 1}"
+  )
 
 
 if __name__ == "__main__":
