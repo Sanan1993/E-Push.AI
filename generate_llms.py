@@ -1,17 +1,16 @@
 import os
-import json
 import urllib.request
 import csv
 import io
 
-# Публичная ссылка на CSV Google Таблицы Makiyaj Cosmetics
-SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT3Yk6Mh4L_4PzC92Z5_g-p_4qI5K-b8j8/pub?output=csv"
+# Точный экспорт твоей Google Таблицы в CSV формат
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv"
 
 TELEGRAM_BOT_TOKEN = "8759672683:AAGMUfl2k51YT2I06MK1W9FZvOCD5cIVpfQ"
 TELEGRAM_CHAT_ID = "596455016"
 
 def fetch_products():
-    """Скачивает и парсит ВСЕ товары из Google Таблицы"""
+    """Скачивает и парсит абсолютно все товары из Google Таблицы"""
     try:
         req = urllib.request.Request(SHEET_CSV_URL, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req) as response:
@@ -22,34 +21,18 @@ def fetch_products():
             if not rows:
                 return []
             
-            # Определяем индексы колонок
-            header = [cell.strip().lower() for cell in rows[0]]
-            name_idx = 0
-            price_idx = 1
-            
-            for idx, cell in enumerate(header):
-                if any(k in cell for k in ['name', 'название', 'məhsul', 'товар', 'title']):
-                    name_idx = idx
-                elif any(k in cell for k in ['price', 'цена', 'qiymət', 'cost']):
-                    price_idx = idx
-
             products = []
-            for row in rows[1:]:
-                if len(row) > max(name_idx, price_idx):
-                    name = row[name_idx].strip()
-                    price = row[price_idx].strip()
-                    if name and name.lower() not in ['name', 'название', 'məhsul']:
+            for row in rows:
+                if len(row) >= 2:
+                    name = row[0].strip()
+                    price = row[1].strip()
+                    # Игнорируем строки заголовка
+                    if name and name.lower() not in ['name', 'название', 'məhsul', 'title', 'товар']:
                         products.append({'name': name, 'price': price})
             return products
     except Exception as e:
         print(f"Ошибка загрузки таблицы: {e}")
-        # Запасной вариант с базовым набором товаров, если сеть сбойнет
-        return [
-            {'name': 'ANUA HEARTLEAF 77% SOOTHING TONER 250ml', 'price': '46.20'},
-            {'name': 'COSRX Advanced Snail 96 Mucin Power Essence 100ml', 'price': '38.50'},
-            {'name': 'BEAUTY OF JOSEON Relief Sun : Rice + Probiotics SPF50+ 50ml', 'price': '34.00'},
-            {'name': 'LANEIGE Lip Sleeping Mask Berry 20g', 'price': '42.00'}
-        ]
+        return []
 
 def generate_llms_txt(store_name, products):
     """Генерирует RAG-индекс llms.txt"""
@@ -71,7 +54,7 @@ def generate_llms_txt(store_name, products):
     return content
 
 def generate_html(store_id, store_name, products):
-    """Генерирует HTML-витрину со ВСЕМИ товарами и Telegram-логгером"""
+    """Генерирует HTML-витрину со всеми товарами и логгером"""
     html_content = f"""<!DOCTYPE html>
 <html lang="az">
 <head>
@@ -155,9 +138,9 @@ def main():
     store_id = "makiyaj"
     store_name = "Makiyaj Cosmetics"
     
-    print("Скачивание каталога...")
+    print("Загрузка товаров из Google Таблицы...")
     products = fetch_products()
-    print(f"Загружено товаров из таблицы: {len(products)}")
+    print(f"Загружено товаров: {len(products)}")
 
     output_dir = f"stores/{store_id}"
     os.makedirs(output_dir, exist_ok=True)
@@ -177,7 +160,7 @@ def main():
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    print("Каталог и логгер успешно обновлены!")
+    print("Все файлы успешно сгенерированы!")
 
 if __name__ == "__main__":
     main()
