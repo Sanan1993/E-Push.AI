@@ -4,7 +4,7 @@ import sys
 import urllib.parse
 import pandas as pd
 
-# Прямая ссылка на экспорт Google Таблицы в формате CSV
+# Google Sheets CSV Link
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv"
 
 STORE_NAME = "Makiyaj Cosmetics"
@@ -37,48 +37,40 @@ def clean_price(val):
 
 
 def run():
-  print("Загрузка данных из Google Таблицы...")
+  print("Скачивание данных из Google Таблицы...")
   try:
     df = pd.read_csv(SHEET_CSV_URL)
   except Exception as e:
-    print(f"Ошибка загрузки данных: {e}")
+    print(f"Ошибка скачивания: {e}")
     sys.exit(1)
 
-  # Авто-поиск нужных колонок
-  col_t = next(
-      (
-          c
-          for c in df.columns
-          if any(
-              k in str(c).lower()
-              for k in ["название", "наименование", "title", "name", "ad"]
-          )
-      ),
-      df.columns[0],
-  )
-  col_p = next(
-      (
-          c
-          for c in df.columns
-          if any(
-              k in str(c).lower()
-              for k in ["цена", "розница", "price", "qiymət"]
-          )
-      ),
-      df.columns[1] if len(df.columns) > 1 else df.columns[0],
-  )
+  # Если таблица пустая
+  if df.empty:
+    print("Ошибка: Таблица пустая!")
+    sys.exit(1)
 
-  print(f"Используем колонки: '{col_t}' и '{col_p}'")
+  # Автоопределение: берем колонки или по названию, или тупо 1-ю и 2-ю
+  col_t = df.columns[0]
+  col_p = df.columns[1] if len(df.columns) > 1 else df.columns[0]
+
+  for c in df.columns:
+    c_str = str(c).lower()
+    if any(k in c_str for k in ["название", "наименование", "title", "ad"]):
+      col_t = c
+    if any(k in c_str for k in ["цена", "розница", "price", "qiymət"]):
+      col_p = c
+
+  print(f"Используем столбцы: '{col_t}' (Название) и '{col_p}' (Цена)")
 
   items = []
   for _, r in df.iterrows():
-    t, p = clean_title(r.get(col_t)), clean_price(r.get(col_p))
+    t = clean_title(r.get(col_t))
+    p = clean_price(r.get(col_p))
     if t:
       items.append({"title": t, "price": p})
 
   print(f"Успешно обработано товаров: {len(items)}")
 
-  # Создание карточек и файлов для ИИ
   cards, llms_lines = [], [
       f"# {STORE_NAME}\nLocation: Baku, Azerbaijan\nTotal items: {len(items)}\n"
   ]
@@ -96,6 +88,20 @@ def run():
         </div>""")
     llms_lines.append(f"- {i['title']} | {i['price']} | {wa_link}")
 
+  # Скрипт логгера ботов (если у вас есть эндпоинт трекера, он сработает при загрузке)
+  bot_tracker_script = """
+    <script>
+        fetch('/api/track-bot', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                path: window.location.pathname,
+                ua: navigator.userAgent
+            })
+        }).catch(()=>{});
+    </script>
+    """
+
   html_content = f"""<!DOCTYPE html>
 <html lang="az">
 <head>
@@ -104,13 +110,14 @@ def run():
     <title>{STORE_NAME} — Kataloq</title>
     <style>
         body {{ font-family: system-ui, -apple-system, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }}
-        h1 {{ text-align: center; color: #111; }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 20px auto; }}
+        h1 {{ text-align: center; color: #111; font-size: 28px; margin-bottom: 20px; }}
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }}
         .card {{ background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; }}
         .title {{ font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #222; }}
         .price {{ font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 10px; }}
         .btn {{ text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 8px; border-radius: 5px; font-weight: bold; font-size: 13px; }}
     </style>
+    {bot_tracker_script}
 </head>
 <body>
     <h1>{STORE_NAME}</h1>
@@ -118,35 +125,35 @@ def run():
 </body>
 </html>"""
 
-  # Создаем структуры папок
-  dirs = ["public", f"stores/{STORE_SLUG}", f"public/stores/{STORE_SLUG}"]
-  for d in dirs:
+  # Создаем директории
+  directories = ["public", f"stores/{STORE_SLUG}", f"public/stores/{STORE_SLUG}"]
+  for d in directories:
     os.makedirs(d, exist_ok=True)
 
-  # Сохраняем HTML во все нужные директории для Vercel
-  paths_html = [
+  # Сохраняем HTML во все места
+  html_paths = [
       "index.html",
       "public/index.html",
       f"stores/{STORE_SLUG}/index.html",
       f"public/stores/{STORE_SLUG}/index.html",
   ]
-  for p in paths_html:
+  for p in html_paths:
     with open(p, "w", encoding="utf-8") as f:
       f.write(html_content)
 
-  # Сохраняем llms.txt во все директории
+  # Сохраняем llms.txt во все места
   llms_txt = "\n".join(llms_lines)
-  paths_llms = [
+  llms_paths = [
       "llms.txt",
       "public/llms.txt",
       f"stores/{STORE_SLUG}/llms.txt",
       f"public/stores/{STORE_SLUG}/llms.txt",
   ]
-  for p in paths_llms:
+  for p in llms_paths:
     with open(p, "w", encoding="utf-8") as f:
       f.write(llms_txt)
 
-  print("Генерация завершена успешно!")
+  print("Успешно сгенерировано!")
 
 
 if __name__ == "__main__":
