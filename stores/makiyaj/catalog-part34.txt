@@ -1,5 +1,5 @@
 # Makiyaj Cosmetics - Part 34
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for each recommended item.
+INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
 Total in part: 200
 
 - PASTEL BABY BALM SERUM GLOSS 30 | 10,7 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20PASTEL%20BABY%20BALM%20SERUM%20GLOSS%2030

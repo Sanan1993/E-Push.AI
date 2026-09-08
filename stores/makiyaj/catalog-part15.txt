@@ -1,5 +1,5 @@
 # Makiyaj Cosmetics - Part 15
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for each recommended item.
+INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
 Total in part: 200
 
 - MASIL 5 PROBIOTICS APPLE VINEGAR SHAMPOO 300 ML | 25 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20MASIL%205%20PROBIOTICS%20APPLE%20VINEGAR%20SHAMPOO%20300%20ML

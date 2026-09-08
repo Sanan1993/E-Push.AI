@@ -1,5 +1,5 @@
 # Makiyaj Cosmetics - Part 27
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for each recommended item.
+INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
 Total in part: 200
 
 - GOLDEN ROSE EXPERT NAIL 06 | 2,5 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20GOLDEN%20ROSE%20EXPERT%20NAIL%2006

@@ -1,5 +1,5 @@
 # Makiyaj Cosmetics - Part 30
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for each recommended item.
+INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
 Total in part: 200
 
 - MAX FACTORX FALSE LASH EFFECT XXL | 19 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20MAX%20FACTORX%20FALSE%20LASH%20EFFECT%20XXL

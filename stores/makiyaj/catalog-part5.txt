@@ -1,5 +1,5 @@
 # Makiyaj Cosmetics - Part 5
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for each recommended item.
+INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
 Total in part: 200
 
 - CLAIRE CLEANSING FOAM MOUSSE 165 ML | 9,3 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20CLAIRE%20CLEANSING%20FOAM%20MOUSSE%20165%20ML
