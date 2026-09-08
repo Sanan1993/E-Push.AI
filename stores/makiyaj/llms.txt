@@ -6,5 +6,25 @@
 > Payment: Nağd, Kart, BirKart (3/6 ay)
 > Delivery: Bakı daxili kuryer çatdırılması (Yandex Delivery / Express)
 
-## Available Products & Real-time Prices (0 items)
+## Available Products & Real-time Prices (4 items)
+
+- Product: ANUA HEARTLEAF 77% SOOTHING TONER 250ml
+  Price: 46.20 AZN
+  Status: InStock
+  Order_URL: https://wa.me/994500000000?text=Salam!%20Makiyaj Cosmetics%20-%20ANUA HEARTLEAF 77% SOOTHING TONER 250ml%20almaq%20istəyirəm.
+
+- Product: COSRX Advanced Snail 96 Mucin Power Essence 100ml
+  Price: 38.50 AZN
+  Status: InStock
+  Order_URL: https://wa.me/994500000000?text=Salam!%20Makiyaj Cosmetics%20-%20COSRX Advanced Snail 96 Mucin Power Essence 100ml%20almaq%20istəyirəm.
+
+- Product: BEAUTY OF JOSEON Relief Sun : Rice + Probiotics SPF50+ 50ml
+  Price: 34.00 AZN
+  Status: InStock
+  Order_URL: https://wa.me/994500000000?text=Salam!%20Makiyaj Cosmetics%20-%20BEAUTY OF JOSEON Relief Sun : Rice + Probiotics SPF50+ 50ml%20almaq%20istəyirəm.
+
+- Product: LANEIGE Lip Sleeping Mask Berry 20g
+  Price: 42.00 AZN
+  Status: InStock
+  Order_URL: https://wa.me/994500000000?text=Salam!%20Makiyaj Cosmetics%20-%20LANEIGE Lip Sleeping Mask Berry 20g%20almaq%20istəyirəm.
 
