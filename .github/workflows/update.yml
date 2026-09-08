@@ -2,8 +2,8 @@ name: Update Catalog and LLMS
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Автозапуск каждые 6 часов
-  workflow_dispatch: # Кнопка для ручного запуска в GitHub Actions
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
