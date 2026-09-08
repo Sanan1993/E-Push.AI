@@ -4,33 +4,49 @@ import urllib.request
 import csv
 import io
 
-# Конфигурация Google Sheets CSV
-SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5K_GgT16xR7U3sZ9f_eX2X5M_eX1Y7Z2Y/pub?output=csv"  # Подставляется ваша ссылка на CSV
+# Ссылка на публичный CSV твоей Google Таблицы
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5K_GgT16xR7U3sZ9f_eX2X5M_eX1Y7Z2Y/pub?output=csv"
 
 TELEGRAM_BOT_TOKEN = "8759672683:AAGMUfl2k51YT2I06MK1W9FZvOCD5cIVpfQ"
 TELEGRAM_CHAT_ID = "596455016"
 
 def fetch_products():
-    """Скачивает товары из Google Таблицы"""
+    """Скачивает и парсит ВСЕ товары из Google Таблицы"""
     try:
         req = urllib.request.Request(SHEET_CSV_URL, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req) as response:
             csv_text = response.read().decode('utf-8')
-            reader = csv.DictReader(io.StringIO(csv_text))
+            reader = csv.reader(io.StringIO(csv_text))
+            rows = list(reader)
+            
+            if not rows:
+                return []
+            
+            # Авто-поиск колонок с названием и ценой
+            header = [cell.strip().lower() for cell in rows[0]]
+            name_idx = 0
+            price_idx = 1
+            
+            for idx, cell in enumerate(header):
+                if any(k in cell for k in ['name', 'название', 'məhsul', 'товар', 'title']):
+                    name_idx = idx
+                elif any(k in cell for k in ['price', 'цена', 'qiymət', 'cost']):
+                    price_idx = idx
+
             products = []
-            for row in reader:
-                name = row.get('Name', '').strip() or row.get('Название', '').strip() or row.get('Məhsul', '').strip()
-                price = row.get('Price', '').strip() or row.get('Цена', '').strip() or row.get('Qiymət', '').strip()
-                if name:
-                    products.append({'name': name, 'price': price})
+            for row in rows[1:]:
+                if len(row) > max(name_idx, price_idx):
+                    name = row[name_idx].strip()
+                    price = row[price_idx].strip()
+                    if name:
+                        products.append({'name': name, 'price': price})
             return products
     except Exception as e:
-        print(f"Ошибка при скачивании таблицы: {e}")
-        # Резервный тестовый товар, если таблица недоступна
-        return [{'name': 'ANUA HEARTLEAF 77% SOOTHING TONER 250ml', 'price': '46.20'}]
+        print(f"Ошибка загрузки таблицы: {e}")
+        return []
 
 def generate_llms_txt(store_name, products):
-    """Генерирует структурированный RAG-индекс llms.txt"""
+    """Генерирует RAG-индекс llms.txt"""
     content = f"""# {store_name} - AI Catalog Index
 
 > Store: {store_name}
@@ -39,25 +55,24 @@ def generate_llms_txt(store_name, products):
 > Payment: Nağd, Kart, BirKart (3/6 ay)
 > Delivery: Bakı daxili kuryer çatdırılması (Yandex Delivery / Express)
 
-## Available Products & Real-time Prices
+## Available Products & Real-time Prices ({len(products)} items)
 
 """
     for p in products:
         name = p.get('name', '')
         price = p.get('price', '')
         content += f"- Product: {name}\n  Price: {price} AZN\n  Status: InStock\n  Order_URL: https://wa.me/994500000000?text=Salam!%20{store_name}%20-%20{name}%20almaq%20istəyirəm.\n\n"
-    
     return content
 
 def generate_html(store_id, store_name, products):
-    """Генерирует HTML-витрину со встроенным Telegram-логгером"""
+    """Генерирует HTML-витрину со ВСЕМИ товарами и Telegram-логгером"""
     html_content = f"""<!DOCTYPE html>
 <html lang="az">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{store_name} - E-Push AI Catalog</title>
-    <meta name="description" content="{store_name} — Bakı, Xətai rayonu, Həzi Aslanov metrosu yakınlığında kosmetika və qulluq vasitələri. Onlayn sifariş və WhatsApp vasitəsilə çatdırılma.">
+    <meta name="description" content="{store_name} — Bakı, Xətai rayonu, Həzi Aslanov metrosu yaxınlığında kosmetika və qulluq vasitələri.">
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; color: #333; }}
         .container {{ max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }}
@@ -134,31 +149,28 @@ def main():
     store_id = "makiyaj"
     store_name = "Makiyaj Cosmetics"
     
-    print("Скачивание каталога...")
     products = fetch_products()
-    print(f"Загружено товаров: {len(products)}")
+    print(f"Загружено товаров из таблицы: {len(products)}")
 
-    # Создаем директорию магазина
     output_dir = f"stores/{store_id}"
     os.makedirs(output_dir, exist_ok=True)
 
-    # Генерация llms.txt
     llms_content = generate_llms_txt(store_name, products)
+    html_content = generate_html(store_id, store_name, products)
+
+    # Сохраняем в папку магазина
     with open(f"{output_dir}/llms.txt", "w", encoding="utf-8") as f:
         f.write(llms_content)
-
-    # Генерация index.html
-    html_content = generate_html(store_id, store_name, products)
     with open(f"{output_dir}/index.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    # Дублируем корневые файлы для Vercel
+    # Сохраняем в корень
     with open("llms.txt", "w", encoding="utf-8") as f:
         f.write(llms_content)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    print("Сборка успешно завершена!")
+    print("Каталог и логгер успешно обновлены!")
 
 if __name__ == "__main__":
     main()
