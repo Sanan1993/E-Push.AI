@@ -1,201 +1,169 @@
+import math
 import os
-import urllib.request
-import csv
-import io
 import re
+import urllib.parse
+import pandas as pd
 
-# Прямой экспорт Google Таблицы в CSV
-SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv"
+# ==========================================
+# 1. КОНФИГУРАЦИЯ И ПУТИ
+# ==========================================
+EXCEL_FILE = "catalog.xlsx"  # Путь к вашему исходному прайсу
+STORE_NAME = "Makiyaj Cosmetics"
+STORE_SLUG = "makiyaj"
+OUTPUT_DIR = os.path.join("stores", STORE_SLUG)
 
-TELEGRAM_BOT_TOKEN = "8759672683:AAGMUfl2k51YT2I06MK1W9FZvOCD5cIVpfQ"
-TELEGRAM_CHAT_ID = "596455016"
+# Поля в вашем Excel (измените наименования колонок при необходимости)
+COL_TITLE = "Название_Товара"
+COL_PRICE = "Розничная_Цена"
 
-def fetch_products():
-    """Скачивает и точно разобирает колонки с именами и ценами"""
-    try:
-        req = urllib.request.Request(SHEET_CSV_URL, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req) as response:
-            csv_text = response.read().decode('utf-8')
-            reader = csv.reader(io.StringIO(csv_text))
-            rows = list(reader)
-            
-            if not rows:
-                return []
-            
-            products = []
-            
-            for row in rows:
-                # Очищаем ячейки от лишних пробелов
-                clean_row = [cell.strip() for cell in row if cell.strip()]
-                if len(clean_row) < 2:
-                    continue
-                
-                # Ищем колонку с названием (самая длинная текстовая ячейка, пропуская чисто числовые ID)
-                name = ""
-                price = ""
-                
-                for cell in clean_row:
-                    # Если ячейка похожа на цену (содержит цифры, возможно точки/запятые или AZN)
-                    if re.search(r'\d', cell) and len(cell) < 15 and not name:
-                        # Если это не номер позиции, а цена
-                        if any(char in cell for char in ['.', ',']) or 'azn' in cell.lower() or len(cell) <= 6:
-                            price_val = re.sub(r'[^0-9.,]', '', cell)
-                            if price_val:
-                                price = price_val
-                    # Если ячейка с текстом и длинее 3 символов — это название товара
-                    elif len(cell) > 3 and not re.match(r'^\d+$', cell):
-                        if cell.lower() not in ['name', 'название', 'məhsul', 'товар', 'mal', 'naimeno']:
-                            name = cell
+# ==========================================
+# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ОЧИСТКИ
+# ==========================================
 
-                # Альтернативный разбор по колонкам, если умный поиск пропустил
-                if not name and len(clean_row) >= 2:
-                    # Обычно Col 1 = №, Col 2 = Name, Col 3 = Price
-                    if len(clean_row) >= 3 and not clean_row[1].isdigit():
-                        name = clean_row[1]
-                        price = clean_row[2]
-                    else:
-                        name = clean_row[0] if not clean_row[0].isdigit() else clean_row[1]
-                        price = clean_row[-1]
 
-                # Форматируем цену
-                price_formatted = re.sub(r'[^0-9.,]', '', price).replace(',', '.')
-                if not price_formatted:
-                    price_formatted = "По запросу"
+def clean_title(val):
+  """Очистка названий от технических данных, складов и одиночных чисел."""
+  if pd.isna(val):
+    return None
+  title_str = str(val).strip()
 
-                if name and not name.isdigit():
-                    products.append({'name': name, 'price': price_formatted})
+  # Исключаем служебные заголовки складов
+  if re.search(
+      r"Anbar|Склад|Итого|Total|Əsas", title_str, flags=re.IGNORECASE
+  ):
+    return None
 
-            return products
-    except Exception as e:
-        print(f"Ошибка загрузки таблицы: {e}")
-        return []
+  # Если название состоит только из цифр/знаков препинания (например "10,9") — пропускаем
+  clean_num_check = re.sub(r"[\d\.,\s]", "", title_str)
+  if not clean_num_check:
+    return None
 
-def generate_llms_txt(store_name, products):
-    """Генерирует RAG-индекс llms.txt"""
-    content = f"""# {store_name} - AI Catalog Index
+  return title_str
 
-> Store: {store_name}
-> Location (AZ): Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı, İlqar Zülfüqarov küç.
-> Location (RU): Баку, Хатаинский район, метро Ази Асланова, рядом с Академией Пограничных Войск
-> Payment: Nağd, Kart, BirKart (3/6 ay)
-> Delivery: Bakı daxili kuryer çatdırılması (Yandex Delivery / Express)
 
-## Available Products & Real-time Prices ({len(products)} items)
+def clean_price(val):
+  """Очистка цен и фильтрация штрихкодов."""
+  if pd.isna(val):
+    return "По запросу"
+  try:
+    # Замена запятой на точку
+    price_num = float(str(val).replace(",", ".").strip())
 
-"""
-    for p in products:
-        name = p.get('name', '')
-        price = p.get('price', '')
-        content += f"- Product: {name}\n  Price: {price} AZN\n  Status: InStock\n  Order_URL: https://wa.me/994500000000?text=Salam!%20{store_name}%20-%20{name}%20almaq%20istəyirəm.\n\n"
-    return content
+    # Защита от штрихкодов (EAN-13) и номеров телефонов
+    if price_num > 10000 or price_num <= 0:
+      return "По запросу"
 
-def generate_html(store_id, store_name, products):
-    """Генерирует HTML-витрину со всеми товарами и логгером"""
-    html_content = f"""<!DOCTYPE html>
+    return f"{price_num:.2f} AZN"
+  except ValueError:
+    return "По запросу"
+
+
+# ==========================================
+# 3. ОСНОВНАЯ ЛОГИКА ГЕНЕРАЦИИ
+# ==========================================
+
+
+def generate_site_and_llms():
+  os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+  # Загрузка прайса
+  df = pd.read_excel(EXCEL_FILE)
+
+  # Обработка данных
+  valid_products = []
+  for _, row in df.iterrows():
+    title = clean_title(row.get(COL_TITLE))
+    price = clean_price(row.get(COL_PRICE))
+
+    if title:
+      valid_products.append({"title": title, "price": price})
+
+  print(f"Успешно обработано товаров: {len(valid_products)}")
+
+  # ------------------------------------------
+  # A. Генерация index.html
+  # ------------------------------------------
+  cards_html = []
+  llms_txt_lines = [
+      f"# {STORE_NAME} Catalog",
+      f"Location: Baku, Azerbaijan",
+      f"Total products: {len(valid_products)}",
+      "\n## Products List:\n",
+  ]
+
+  for item in valid_products:
+    title = item["title"]
+    price = item["price"]
+
+    # WhatsApp URL
+    wa_msg = urllib.parse.quote(
+        f"Salam! {STORE_NAME} - {title} ({price}) almaq istəyirəm."
+    )
+    wa_link = f"https://wa.me/994500000000?text={wa_msg}"  # Укажите ваш номер
+
+    # HTML Карточка
+    card = f"""
+        <div class="product-card">
+            <div class="product-info">
+                <div class="product-title">{title}</div>
+                <div class="product-price">{price}</div>
+            </div>
+            <a href="{wa_link}" class="buy-btn" target="_blank" rel="noopener">WhatsApp ilə Sifariş Et</a>
+        </div>"""
+    cards_html.append(card)
+
+    # Строка для llms.txt
+    llms_txt_lines.append(f"- {title} | Price: {price} | Order: {wa_link}")
+
+  full_cards_str = "\n".join(cards_html)
+
+  html_content = f"""<!DOCTYPE html>
 <html lang="az">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{store_name} - E-Push AI Catalog</title>
-    <meta name="description" content="{store_name} — Bakı, Xətai rayonu, Həzi Aslanov metrosu yaxınlığında kosmetika və qulluq vasitələri. Onlayn sifariş və WhatsApp vasitəsilə çatdırılma.">
+    <title>{STORE_NAME} — Kataloq</title>
+    <meta name="description" content="{STORE_NAME} məhsul kataloqu və qiymətləri. Bakı, Azərbaycan.">
     <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; color: #333; }}
-        .container {{ max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }}
-        h1 {{ color: #111; margin-bottom: 5px; }}
-        .location {{ color: #666; font-size: 0.95rem; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; line-height: 1.5; }}
-        .product-card {{ border: 1px solid #e1e8ed; border-radius: 8px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }}
-        .product-title {{ font-weight: 600; font-size: 1.05rem; color: #1a1a1a; margin-bottom: 5px; }}
-        .product-price {{ font-size: 1.2rem; font-weight: bold; color: #2e7d32; white-space: nowrap; margin-left: 15px; }}
-        .buy-btn {{ display: inline-block; background-color: #25D366; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; margin-top: 8px; }}
-        .buy-btn:hover {{ background-color: #1eb857; }}
+        * {{ box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }}
+        body {{ background-color: #f4f6f8; color: #333; padding: 20px; }}
+        .header {{ text-align: center; margin-bottom: 30px; }}
+        .header h1 {{ font-size: 24px; color: #111; margin-bottom: 8px; }}
+        .catalog-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; max-width: 1200px; margin: 0 auto; }}
+        .product-card {{ background: #fff; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #e1e4e8; }}
+        .product-title {{ font-size: 15px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; color: #222; }}
+        .product-price {{ font-size: 16px; font-weight: 700; color: #0d7a5f; margin-bottom: 12px; }}
+        .buy-btn {{ display: block; text-align: center; background-color: #25D366; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 14px; transition: background 0.2s; }}
+        .buy-btn:hover {{ background-color: #1eb956; }}
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>{store_name}</h1>
-    <div class="location">
-        📍 <strong>Ünvan:</strong> Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı, İlqar Zülfüqarov küç.<br>
-        💳 <strong>Ödəniş:</strong> Nağd, Kart, BirKart (3/6 ay)
+    <div class="header">
+        <h1>{STORE_NAME}</h1>
+        <p>Bakı, Azərbaycan | Onlayn Kataloq</p>
     </div>
-    <h2>Məhsul Kataloqu ({len(products)})</h2>
-"""
-    for p in products:
-        name = p.get('name', '')
-        price = p.get('price', '')
-        price_display = f"{price} AZN" if price != "По запросу" else price
-        html_content += f"""
-    <div class="product-card">
-        <div>
-            <div class="product-title">{name}</div>
-            <a href="https://wa.me/994500000000?text=Salam!%20{store_name}%20-%20{name}%20almaq%20istəyirəm." class="buy-btn" target="_blank">WhatsApp ilə Sifariş Et</a>
-        </div>
-        <div class="product-price">{price_display}</div>
-    </div>"""
-
-    html_content += f"""
-</div>
-
-<!-- Telegram Auto-Logger Script -->
-<script>
-(function() {{
-  const TELEGRAM_BOT_TOKEN = "{TELEGRAM_BOT_TOKEN}";
-  const TELEGRAM_CHAT_ID = "{TELEGRAM_CHAT_ID}";
-  const userAgent = navigator.userAgent || "";
-  const url = window.location.href;
-
-  const botKeywords = [
-    'perplexity', 'claudebot', 'chatgpt-user', 'gptbot', 
-    'bingbot', 'googlebot', 'yandex', 'applebot', 'facebookexternalhit', 
-    'twitterbot', 'bytespider', 'amazonbot'
-  ];
-
-  const isBot = botKeywords.some(keyword => userAgent.toLowerCase().includes(keyword));
-
-  const text = `🔔 <b>Зафиксирован визит на витрину!</b>\\n\\n` +
-               `📍 <b>URL:</b> <code>${{url}}</code>\\n` +
-               `🕵️‍♂️ <b>User-Agent:</b> <code>${{userAgent}}</code>\\n` +
-               `🤖 <b>ИИ-Бот:</b> ${{isBot ? 'ДА ✅' : 'НЕТ ❌'}}`;
-
-  fetch(`https://api.telegram.org/bot${{TELEGRAM_BOT_TOKEN}}/sendMessage`, {{
-    method: 'POST',
-    headers: {{ 'Content-Type': 'application/json' }},
-    body: JSON.stringify({{
-      chat_id: TELEGRAM_CHAT_ID,
-      text: text,
-      parse_mode: 'HTML'
-    }})
-  }}).catch(console.error);
-}})();
-</script>
+    <div class="catalog-grid">
+        {full_cards_str}
+    </div>
 </body>
 </html>"""
-    return html_content
 
-def main():
-    store_id = "makiyaj"
-    store_name = "Makiyaj Cosmetics"
-    
-    print("Загрузка и парсинг товаров...")
-    products = fetch_products()
-    print(f"Обработано товаров: {len(products)}")
+  # Сохраняем index.html
+  index_path = os.path.join(OUTPUT_DIR, "index.html")
+  with open(index_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
 
-    output_dir = f"stores/{store_id}"
-    os.makedirs(output_dir, exist_ok=True)
+  # ------------------------------------------
+  # B. Генерация llms.txt и llms-full.txt
+  # ------------------------------------------
+  llms_path = os.path.join(OUTPUT_DIR, "llms.txt")
+  with open(llms_path, "w", encoding="utf-8") as f:
+    f.write("\n".join(llms_txt_lines))
 
-    llms_content = generate_llms_txt(store_name, products)
-    html_content = generate_html(store_id, store_name, products)
+  print(f"Готово!")
+  print(f"HTML сохранен в: {index_path}")
+  print(f"LLMS.txt сохранен в: {llms_path}")
 
-    with open(f"{output_dir}/llms.txt", "w", encoding="utf-8") as f:
-        f.write(llms_content)
-    with open(f"{output_dir}/index.html", "w", encoding="utf-8") as f:
-        f.write(html_content)
-
-    with open("llms.txt", "w", encoding="utf-8") as f:
-        f.write(llms_content)
-    with open("index.html", "w", encoding="utf-8") as f:
-        f.write(html_content)
-
-    print("Сборка завершена успешно!")
 
 if __name__ == "__main__":
-    main()
+  generate_site_and_llms()
