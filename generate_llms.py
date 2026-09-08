@@ -11,6 +11,7 @@ STORE_NAME = "Makiyaj Cosmetics"
 STORE_SLUG = "makiyaj"
 PART_SIZE = 200
 BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
+GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
 
 
 def run():
@@ -120,7 +121,12 @@ def run():
   with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
 
-  # 2. Создаем XML-файл верификации BingSiteAuth.xml (для 2-го способа верификации)
+  # 2. Создаем файл верификации Google Search Console
+  google_html_content = f"google-site-verification: {GOOGLE_VERIFY_FILE}"
+  with open(GOOGLE_VERIFY_FILE, "w", encoding="utf-8") as f:
+    f.write(google_html_content)
+
+  # 3. Создаем XML-файл верификации BingSiteAuth.xml
   bing_xml = f"""<?xml version="1.0"?>
 <users>
 	<user>{BING_KEY}</user>
@@ -132,7 +138,7 @@ def run():
   with open(f"{store_dir}/BingSiteAuth.xml", "w", encoding="utf-8") as f:
     f.write(bing_xml)
 
-  # 3. Генерация llms.txt
+  # 4. Генерация llms.txt
   ai_instruction = (
       f"# {STORE_NAME}\n"
       "Location: Baku, Azerbaijan\n"
@@ -164,22 +170,23 @@ def run():
       f.write(part_content)
     part_num += 1
 
-  # 4. Служебные файлы
+  # 5. Служебные файлы
   robots_txt = "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n"
   with open("robots.txt", "w", encoding="utf-8") as f:
     f.write(robots_txt)
 
-  sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
+  sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>/</loc></url>
   <url><loc>/stores/makiyaj/index.html</loc></url>
   <url><loc>/stores/makiyaj/llms.txt</loc></url>
   <url><loc>/BingSiteAuth.xml</loc></url>
+  <url><loc>/{GOOGLE_VERIFY_FILE}</loc></url>
 </urlset>"""
   with open("sitemap.xml", "w", encoding="utf-8") as f:
     f.write(sitemap_xml)
 
-  print("Все файлы витрины и файлы верификации Bing успешно созданы!")
+  print("Все файлы витрины, Google и Bing верификации успешно созданы!")
 
 
 if __name__ == "__main__":
