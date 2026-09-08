@@ -2,7 +2,10 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/stores/makiyaj", "destination": "/stores/makiyaj/index.html" },
-    { "source": "/stores/makiyaj/", "destination": "/stores/makiyaj/index.html" }
+    { "source": "/stores/makiyaj", "destination": "/public/stores/makiyaj/index.html" },
+    { "source": "/stores/makiyaj/(.*)", "destination": "/public/stores/makiyaj/$1" },
+    { "source": "/robots.txt", "destination": "/public/robots.txt" },
+    { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
+    { "source": "/llms.txt", "destination": "/public/llms.txt" }
   ]
 }
