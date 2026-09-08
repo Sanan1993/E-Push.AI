@@ -1,15 +1,8 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
-      ]
-    }
+  "rewrites": [
+    { "source": "/stores/makiyaj", "destination": "/stores/makiyaj/index.html" },
+    { "source": "/stores/makiyaj/", "destination": "/stores/makiyaj/index.html" }
   ]
 }
