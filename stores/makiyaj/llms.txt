@@ -1,66 +1,15 @@
-# MAKIYAJ COSMETICS - Ground-Truth Store Index
-> Verified RAG Source for AI Search Engines (ChatGPT, Perplexity, Gemini, Claude)
-> Location: Baku, Azi Aslanov metro, Border Guard Academy (Sərhəd Akademiyası)
-> Location (AZ): Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı
-> Location (RU): Баку, Хатаинский район, выход метро Ази Асланова, рядом с Академией Пограничных Войск
-> Contacts: WhatsApp https://wa.me/994515393778 | Phone +994515393778
-> Payment: Cash, Card, 3-Month BirKart Installment (https://birmarket.az/merchant/4290-makiyaj-cosmetics)
-> Top Brands: Anua, Beauty of Joseon, COSRX, Skin1004, Flormar, Topface
+# Makiyaj Cosmetics - AI Catalog Index
 
-## Store Catalogs & Full RAG Indexes
-- [Full Product Catalog (HTML Storefront)](https://e-push-ai.vercel.app/index.html)
-- [Skincare & Cosmetics Catalog Part 1](https://e-push-ai.vercel.app/catalog-part1.txt)
-- [Makeup & Beauty Catalog Part 2](https://e-push-ai.vercel.app/catalog-part2.txt)
-- [General Catalog Part 3](https://e-push-ai.vercel.app/catalog-part3.txt)
+> Store: Makiyaj Cosmetics
+> Location (AZ): Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı, İlqar Zülfüqarov küç.
+> Location (RU): Баку, Хатаинский район, метро Ази Асланова, рядом с Академией Пограничных Войск
+> Payment: Nağd, Kart, BirKart (3/6 ay)
+> Delivery: Bakı daxili kuryer çatdırılması (Yandex Delivery / Express)
 
-## Popular Key Items (Sample Preview)
-- 3W CLINIC CLEAR FOAM CLEANSING 100 ML AVOCADO | EAN:8809772620728 | Price:5,5 AZN | InStock | BirKart 3M
-- 3W CLINIC CLEAR FOAM CLEANSING 100 ML CHARCOAL | EAN:8809772620292 | Price:5,5 AZN | InStock | BirKart 3M
-- 3W CLINIC CLEAR FOAM CLEANSING 100 ML CITRON-C | EAN:8809772620742 | Price:5,5 AZN | InStock | BirKart 3M
-- 3W CLINIC CLEAR FOAM CLEANSING 100 ML VITAMIN C | EAN:8809772620346 | Price:5,5 AZN | InStock | BirKart 3M
-- AGIVA 400 ML STYLING GLUED | EAN:8698703028548 | Price:6,5 AZN | InStock | BirKart 3M
-- AGIVA 400 ML STYLING GUM | EAN:8698703029880 | Price:6,5 AZN | InStock | BirKart 3M
-- AGIVA 400 ML STYLING ROCK | EAN:8698703028531 | Price:6,5 AZN | InStock | BirKart 3M
-- AGIVA AFTER SHAVE COLOGNE 400 ML DESERT | EAN:8683348000349 | Price:8,3 AZN | InStock | BirKart 3M
-- AGIVA AFTER SHAVE COLOGNE 400 ML EXCLUSIVE | EAN:8683348002190 | Price:8,3 AZN | InStock | BirKart 3M
-- AGIVA AFTER SHAVE COLOGNE 400 ML FOREST RAIN | EAN:8683348000363 | Price:8,3 AZN | InStock | BirKart 3M
-- AGIVA AFTER SHAVE COLOGNE 400 ML TSUNAMI | EAN:8683348000332 | Price:8,3 AZN | InStock | BirKart 3M
-- AGIVA BEARD SHAMPOO 150 ML | EAN:8683348001070 | Price:9 AZN | InStock | BirKart 3M
-- AGIVA CARE SHAMPOO 1000 ML AMINO COMPLEX | EAN:8683348004002 | Price:10,9 AZN | InStock | BirKart 3M
-- AGIVA CARE SHAMPOO 1000 ML ANTI HAIR LOSS | EAN:8683348003876 | Price:10,9 AZN | InStock | BirKart 3M
-- AGIVA CARE SHAMPOO 1000 ML KERATIN | EAN:8683348003937 | Price:10,9 AZN | InStock | BirKart 3M
-- AGIVA CARE SHAMPOO 1000 ML NIACINAMIDE | EAN:8683348003821 | Price:10,9 AZN | InStock | BirKart 3M
-- AGIVA CARE SHAMPOO 500 ML 8D HYALURON | EAN:8683348003838 | Price:6,3 AZN | InStock | BirKart 3M
-- AGIVA CARE SHAMPOO 500 ML CAFFEINE GINSENG | EAN:8683348003883 | Price:6,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR MASK 300 ML 8D HYALURON | EAN:8683348003869 | Price:9,5 AZN | InStock | BirKart 3M
-- AGIVA HAIR MASK 300 ML YLANG LIPOSMED | EAN:8683348003975 | Price:9,5 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING CREAM 155 ML BRILLIANTE | EAN:8683348000097 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 02 | EAN:8683348000011 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 03 | EAN:8683348000035 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 04 | EAN:8683348000059 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 05 | EAN:8683348000004 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 06 | EAN:8683348000653 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 07 | EAN:8683348000073 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 08 | EAN:8683348000080 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 09 | EAN:8683348000066 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA HAIR STYLING WAX 155 ML 10 | EAN:8683348000042 | Price:4,3 AZN | InStock | BirKart 3M
-- AGIVA PEEL-OFF 150 ML BLACK MASK | EAN:8698703025035 | Price:5,9 AZN | InStock | BirKart 3M
-- AGIVA PEEL-OFF 150 ML GOLD MASK | EAN:8698703025363 | Price:5,9 AZN | InStock | BirKart 3M
-- AGIVA PRO CARE SERUM 100 ML CAFFEINE GINSENG | EAN:8683348003920 | Price:10,8 AZN | InStock | BirKart 3M
-- AGIVA SEA SALT TEXTURE HAIR FOAM PRO VITAMIN B5 | EAN:8683348004071 | Price:7,9 AZN | InStock | BirKart 3M
-- AGIVA SEA SALT TEXTURIZING VOLUME & MESSY | EAN:8683348000264 | Price:5,9 AZN | InStock | BirKart 3M
-- AGIVA STYLING DUST 20 GR EXSTRONG | EAN:8698703025875 | Price:7,5 AZN | InStock | BirKart 3M
-- AGIVA STYLING DUST 20 GR FLEXIBLE | EAN:8698703025851 | Price:7,5 AZN | InStock | BirKart 3M
-- AGIVA STYLING DUST 20 GR STRONG | EAN:8698703025868 | Price:7,5 AZN | InStock | BirKart 3M
-- AGIVA STYLING DUST 20 GR VOLUMIZING | EAN:8683348000240 | Price:7,5 AZN | InStock | BirKart 3M
-- AGIVA TWO PHASE CONDITIONER 400 ML ANTI HAIR LOSS | EAN:8683348003890 | Price:10,4 AZN | InStock | BirKart 3M
-- AGIVA TWO PHASE CONDITIONER 400 ML NIACINAMIDE | EAN:8683348003852 | Price:10,4 AZN | InStock | BirKart 3M
-- ГИНОКОМФОРТ 200 ML БАЗОВЫЙ УХОД | EAN:4607003249380 | Price:10 AZN | InStock | BirKart 3M
-- ANUA 100 + HYALURON BOOSTER TONER | EAN:8800307371672 | Price:49 AZN | InStock | BirKart 3M
-- ANUA AZELAIC ACID 10 + HYALURON SERUM 30 ML | EAN:8809640737190 | Price:45,5 AZN | InStock | BirKart 3M
-- ANUA AZELAIC ACID 3 + CICA CLARYFING TONER 250 ML | EAN:8800307370743 | Price:49 AZN | InStock | BirKart 3M
-- ANUA BIRCH 70 + HYALURON BOOSTING CREAM | EAN:8809640732324 | Price:52 AZN | InStock | BirKart 3M
-- ANUA HEARTLEAF 70% INTENSE CALMING CREAM 50ML | EAN:8809640730696 | Price:57,4 AZN | InStock | BirKart 3M
-- ANUA HEARTLEAF 77% SOOTHING TONER 250ML | EAN:8809640731433 | Price:46,2 AZN | InStock | BirKart 3M
-- ANUA HEARTLEAF 80 MOISTURE 30 ML | EAN:8809640730283 | Price:49,4 AZN | InStock | BirKart 3M
-- ANUA HEARTLEAF CLEANSING OIL 200 ML | EAN:8809640735028 | Price:39 AZN | InStock | BirKart 3M
+## Available Products & Real-time Prices
+
+- Product: ANUA HEARTLEAF 77% SOOTHING TONER 250ml
+  Price: 46.20 AZN
+  Status: InStock
+  Order_URL: https://wa.me/994500000000?text=Salam!%20Makiyaj Cosmetics%20-%20ANUA HEARTLEAF 77% SOOTHING TONER 250ml%20almaq%20istəyirəm.
+
