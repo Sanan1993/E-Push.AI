@@ -7,6 +7,7 @@ import pandas as pd
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv"
 STORE_NAME = "Makiyaj Cosmetics"
 STORE_SLUG = "makiyaj"
+PART_SIZE = 2500  # Лимит строк на один файл для ChatGPT
 
 
 def clean_title(val):
@@ -56,8 +57,6 @@ def run():
     if any(k in c_str for k in ["цена", "розница", "price", "qiymət"]):
       col_p = c
 
-  print(f"Колонки: Название='{col_t}', Цена='{col_p}'")
-
   items = []
   for _, r in df.iterrows():
     t = clean_title(r.get(col_t))
@@ -67,12 +66,9 @@ def run():
 
   print(f"Успешно обработано товаров: {len(items)}")
 
+  # 1. Формирование HTML
   cards = []
-  llms_lines = [
-      f"# {STORE_NAME}",
-      "Location: Baku, Azerbaijan",
-      f"Total items: {len(items)}\n",
-  ]
+  llms_all_lines = []
 
   for i in items:
     wa_msg = urllib.parse.quote(
@@ -86,7 +82,7 @@ def run():
             <div class="price">{i['price']}</div>
             <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
         </div>""")
-    llms_lines.append(f"- {i['title']} | {i['price']} | {wa_link}")
+    llms_all_lines.append(f"- {i['title']} | {i['price']} | {wa_link}")
 
   html_content = f"""<!DOCTYPE html>
 <html lang="az">
@@ -110,33 +106,57 @@ def run():
 </body>
 </html>"""
 
-  # Создаем нужные директории
-  for d in ["public", "public/stores/makiyaj", "stores/makiyaj"]:
+  # Создаем директории
+  dirs = ["public", f"stores/{STORE_SLUG}", f"public/stores/{STORE_SLUG}"]
+  for d in dirs:
     os.makedirs(d, exist_ok=True)
 
   # Сохраняем HTML
   for path in [
       "index.html",
       "public/index.html",
-      "stores/makiyaj/index.html",
-      "public/stores/makiyaj/index.html",
+      f"stores/{STORE_SLUG}/index.html",
+      f"public/stores/{STORE_SLUG}/index.html",
   ]:
     with open(path, "w", encoding="utf-8") as f:
       f.write(html_content)
 
-  # Сохраняем llms.txt и llms-full.txt
-  llms_txt = "\n".join(llms_lines)
+  # 2. Сохраняем единый llms.txt и llms-full.txt
+  header_text = f"# {STORE_NAME}\nLocation: Baku, Azerbaijan\nTotal items: {len(items)}\n\n"
+  full_llms_content = header_text + "\n".join(llms_all_lines)
+
   for path in [
       "llms.txt",
       "public/llms.txt",
-      "stores/makiyaj/llms.txt",
-      "stores/makiyaj/llms-full.txt",
-      "public/stores/makiyaj/llms.txt",
+      f"stores/{STORE_SLUG}/llms.txt",
+      f"stores/{STORE_SLUG}/llms-full.txt",
+      f"public/stores/{STORE_SLUG}/llms.txt",
   ]:
     with open(path, "w", encoding="utf-8") as f:
-      f.write(llms_txt)
+      f.write(full_llms_content)
 
-  print("Генерация завершена успешно!")
+  # 3. Разбиваем каталог на части catalog-part1.txt, part2.txt ...
+  part_num = 1
+  for start_idx in range(0, len(llms_all_lines), PART_SIZE):
+    chunk = llms_all_lines[start_idx : start_idx + PART_SIZE]
+    part_filename = f"catalog-part{part_num}.txt"
+    part_content = (
+        f"# {STORE_NAME} - Part {part_num}\nItems:"
+        f" {start_idx + 1}-{start_idx + len(chunk)}\n\n"
+        + "\n".join(chunk)
+    )
+
+    for p_dir in [f"stores/{STORE_SLUG}", f"public/stores/{STORE_SLUG}"]:
+      with open(
+          os.path.join(p_dir, part_filename), "w", encoding="utf-8"
+      ) as f:
+        f.write(part_content)
+
+    part_num += 1
+
+  print(
+      f"Генерация завершена успешно! Создано частей каталога: {part_num - 1}"
+  )
 
 
 if __name__ == "__main__":
