@@ -36,18 +36,21 @@ def clean_price(val):
 
 
 def run():
-  print("Загрузка данных из Google Таблицы...")
+  print("Скачивание данных из Google Таблицы...")
   try:
     df = pd.read_csv(SHEET_CSV_URL)
   except Exception as e:
-    print(f"Ошибка загрузки: {e}")
+    print(f"Ошибка скачивания: {e}")
     sys.exit(1)
 
   if df.empty:
     print("Ошибка: Таблица пустая!")
     sys.exit(1)
 
-  col_t, col_p = df.columns[0], df.columns[1] if len(df.columns) > 1 else df.columns[0]
+  col_t, col_p = (
+      df.columns[0],
+      df.columns[1] if len(df.columns) > 1 else df.columns[0],
+  )
   for c in df.columns:
     c_lower = str(c).lower()
     if any(k in c_lower for k in ["название", "наименование", "title", "ad"]):
@@ -99,47 +102,69 @@ def run():
 </body>
 </html>"""
 
-  # Создаем публичные директории
-  pub_store_dir = f"public/stores/{STORE_SLUG}"
-  os.makedirs(pub_store_dir, exist_ok=True)
-  os.makedirs(f"stores/{STORE_SLUG}", exist_ok=True)
+  # Директории публикации
+  targets = [".", "public", f"stores/{STORE_SLUG}", f"public/stores/{STORE_SLUG}"]
+  for d in targets:
+    os.makedirs(d, exist_ok=True)
 
   # 1. Сохраняем HTML
-  for path in ["index.html", "public/index.html", f"{pub_store_dir}/index.html"]:
+  for path in [
+      "index.html",
+      "public/index.html",
+      f"stores/{STORE_SLUG}/index.html",
+      f"public/stores/{STORE_SLUG}/index.html",
+  ]:
     with open(path, "w", encoding="utf-8") as f:
       f.write(html_content)
 
   # 2. Сохраняем llms.txt
-  full_llms = f"# {STORE_NAME}\nLocation: Baku, Azerbaijan\nTotal: {len(items)}\n\n" + "\n".join(llms_all_lines)
-  for path in ["llms.txt", "public/llms.txt", f"{pub_store_dir}/llms.txt", f"{pub_store_dir}/llms-full.txt"]:
+  full_llms = (
+      f"# {STORE_NAME}\nLocation: Baku, Azerbaijan\nTotal:"
+      f" {len(items)}\n\n"
+      + "\n".join(llms_all_lines)
+  )
+  for path in [
+      "llms.txt",
+      "public/llms.txt",
+      f"stores/{STORE_SLUG}/llms.txt",
+      f"stores/{STORE_SLUG}/llms-full.txt",
+      f"public/stores/{STORE_SLUG}/llms.txt",
+      f"public/stores/{STORE_SLUG}/llms-full.txt",
+  ]:
     with open(path, "w", encoding="utf-8") as f:
       f.write(full_llms)
 
-  # 3. Генерируем части catalog-part1.txt, part2.txt ...
+  # 3. Генерируем части catalog-part1.txt...
   part_num = 1
   for start_idx in range(0, len(llms_all_lines), PART_SIZE):
     chunk = llms_all_lines[start_idx : start_idx + PART_SIZE]
     part_content = f"# {STORE_NAME} - Part {part_num}\n\n" + "\n".join(chunk)
-    for p_dir in [pub_store_dir, f"stores/{STORE_SLUG}"]:
-      with open(os.path.join(p_dir, f"catalog-part{part_num}.txt"), "w", encoding="utf-8") as f:
+    for p_dir in [f"stores/{STORE_SLUG}", f"public/stores/{STORE_SLUG}"]:
+      with open(
+          os.path.join(p_dir, f"catalog-part{part_num}.txt"),
+          "w",
+          encoding="utf-8",
+      ) as f:
         f.write(part_content)
     part_num += 1
 
-  # 4. Генерируем robots.txt и sitemap.xml
-  robots_txt = "User-agent: *\nAllow: /\nSitemap: https://e-push-ai.vercel.app/sitemap.xml\n"
-  with open("public/robots.txt", "w", encoding="utf-8") as f:
-    f.write(robots_txt)
+  # 4. Robots & Sitemap
+  robots_txt = "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n"
+  for p in ["robots.txt", "public/robots.txt"]:
+    with open(p, "w", encoding="utf-8") as f:
+      f.write(robots_txt)
 
   sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://e-push-ai.vercel.app/</loc></url>
-  <url><loc>https://e-push-ai.vercel.app/stores/makiyaj</loc></url>
-  <url><loc>https://e-push-ai.vercel.app/stores/makiyaj/llms.txt</loc></url>
+  <url><loc>/ </loc></url>
+  <url><loc>/stores/makiyaj</loc></url>
+  <url><loc>/stores/makiyaj/llms.txt</loc></url>
 </urlset>"""
-  with open("public/sitemap.xml", "w", encoding="utf-8") as f:
-    f.write(sitemap_xml)
+  for p in ["sitemap.xml", "public/sitemap.xml"]:
+    with open(p, "w", encoding="utf-8") as f:
+      f.write(sitemap_xml)
 
-  print("Все файлы успешно сгенерированы в public/!")
+  print("Все файлы сгенерированы универсально!")
 
 
 if __name__ == "__main__":
