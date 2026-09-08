@@ -1,18 +1,16 @@
-name: Daily Catalog Update
+name: Update Catalog and LLMS
 
 on:
   schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
-
-permissions:
-  contents: write
+    - cron: '0 */6 * * *' # Запуск каждые 6 часов
+  workflow_dispatch: # Возможность запустить вручную через кнопку
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -20,17 +18,18 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
-          pip install pandas requests
+          python -m pip install --upgrade pip
+          pip install pandas
 
-      - name: Run Generator Script
+      - name: Run script
         run: python generate_llms.py
 
-      - name: Commit and Push Changes
+      - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Auto-update catalog" || exit 0
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "Auto-update catalog and llms files"
           git push
