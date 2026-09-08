@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 export default async function handler(req, res) {
   const userAgent = req.headers['user-agent'] || 'Unknown';
   const ip = req.headers['x-forwarded-for'] || 'Unknown IP';
@@ -22,10 +25,10 @@ export default async function handler(req, res) {
                   `🌐 *IP:* \`${ip}\`\n` +
                   `💻 *UA:* \`${userAgent.substring(0, 80)}\``;
 
-  // Отправляем уведомление в твой Telegram
   const TG_BOT_TOKEN = "8759672683:AAGMUfl2k51YT2I06MK1W9FZvOCD5cIVpfQ";
   const TG_CHAT_ID = "596455016";
 
+  // Обязательно ждем отправку в Telegram перед выдачей файла
   try {
     await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
@@ -37,19 +40,17 @@ export default async function handler(req, res) {
       })
     });
   } catch (e) {
-    console.error(e);
+    console.error("Telegram fetch error:", e);
   }
 
-  // Перенаправляем запрос на реальный файл, чтобы ИИ или человек получил данные
-  const fs = require('fs');
-  const path = require('path');
-  
+  // Читаем и отдаем файл
   try {
     const filePath = path.join(process.cwd(), 'stores', 'makiyaj', fileName);
     const fileContent = fs.readFileSync(filePath, 'utf8');
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     return res.status(200).send(fileContent);
   } catch (err) {
+    console.error("File read error:", err);
     return res.status(404).send('File not found');
   }
 }
