@@ -1,1 +1,99 @@
-<meta name="msvalidate.01" content="CAFD35CF8A7F03B86A676AAEEA9F724F">
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="msvalidate.01" content="CAFD35CF8A7F03B86A676AAEEA9F724F">
+    <title>Makiyaj Cosmetics</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+        h1 { text-align: center; color: #111; margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
+        .card { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .title { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #222; line-height: 1.3; }
+        .price { font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 12px; }
+        .btn { text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 13px; transition: background 0.2s; }
+        .btn:hover { background: #1eb857; }
+        .loading { text-align: center; font-size: 16px; color: #666; width: 100%; grid-column: 1 / -1; padding: 40px 0; }
+    </style>
+</head>
+<body>
+
+    <h1>Makiyaj Cosmetics</h1>
+    <div class="grid" id="catalog">
+        <div class="loading">Məhsullar yüklənir...</div>
+    </div>
+
+    <script>
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv&gid=0";
+        const PHONE_NUMBER = "994500000000";
+
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const result = [];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // Простой парсинг CSV с учётом запятых
+                const cols = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/);
+                const cleanedCols = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                result.push(cleanedCols);
+            }
+            return result;
+        }
+
+        async function loadCatalog() {
+            const container = document.getElementById('catalog');
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                if (!response.ok) throw new Error('Ошибка загрузки данных');
+                
+                const csvData = await response.text();
+                const rows = parseCSV(csvData);
+                
+                container.innerHTML = '';
+                let itemCount = 0;
+
+                rows.forEach((r, idx) => {
+                    if (r.length < 4) return;
+                    
+                    const rawTitle = r[1] ? r[1].trim() : '';
+                    const rawPrice = r[3] ? r[3].trim() : '';
+                    
+                    // Фильтрация заголовков и служебных строк
+                    if (idx === 0 || !rawTitle || ['nan', 'none', 'mal', 'title', 'наименование'].includes(rawTitle.toLowerCase())) return;
+                    if (/Anbar|Склад|Итого|Total|Əsas/i.test(rawTitle)) return;
+
+                    let priceVal = rawPrice && !['nan', 'none'].includes(rawPrice.toLowerCase()) ? rawPrice : 'По запросу';
+                    if (priceVal !== 'По запросу' && !priceVal.toLowerCase().includes('azn')) {
+                        priceVal = `${priceVal} AZN`;
+                    }
+
+                    const waMsg = encodeURIComponent(`Salam! Makiyaj almaq istəyirəm: ${rawTitle}`);
+                    const waLink = `https://wa.me/${PHONE_NUMBER}?text=${waMsg}`;
+
+                    const cardHtml = `
+                        <div class="card">
+                            <div class="title">${rawTitle}</div>
+                            <div class="price">${priceVal}</div>
+                            <a href="${waLink}" target="_blank" class="btn">WhatsApp Sifariş</a>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', cardHtml);
+                    itemCount++;
+                });
+
+                if (itemCount === 0) {
+                    container.innerHTML = '<div class="loading">Məhsul tapılmadı.</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="loading">Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.</div>';
+            }
+        }
+
+        loadCatalog();
+    </script>
+</body>
+</html>
