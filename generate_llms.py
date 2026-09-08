@@ -39,14 +39,12 @@ def run():
 
   items = []
   for idx, r in df.iterrows():
-    # Проверяем, чтобы в строке было достаточно колонок (до D включительно, индекс 3)
     if len(r) < 4:
       continue
 
     raw_title = str(r[1]).strip()  # Колонка B (Название)
     raw_price = str(r[3]).strip()  # Колонка D (Цена)
 
-    # Пропускаем шапку таблицы и пустые строки
     if idx == 0 or raw_title.lower() in [
         "nan",
         "none",
@@ -79,7 +77,6 @@ def run():
   llms_all_lines = []
 
   for i in items:
-    # Делаем лаконичную и чистую ссылку на WhatsApp с названием товара
     wa_msg = urllib.parse.quote(f"Salam! Makiyaj almaq istəyirəm: {i['title']}")
     wa_link = f"https://wa.me/994500000000?text={wa_msg}"
 
@@ -90,7 +87,6 @@ def run():
             <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
         </div>""")
 
-    # Строка для ИИ: чистая, с понятной меткой заказа
     llms_all_lines.append(f"- {i['title']} | {i['price']} | Заказать: {wa_link}")
 
   html_content = f"""<!DOCTYPE html>
@@ -98,6 +94,7 @@ def run():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="msvalidate.01" content="CAFD35CF8A7F03B86A676AAEEA9F724F">
     <title>{STORE_NAME}</title>
     <style>
         body {{ font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }}
@@ -124,7 +121,6 @@ def run():
   with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
 
-  # Добавляем жесткую инструкцию для ИИ в шапку файлов каталога
   ai_instruction = (
       f"# {STORE_NAME}\n"
       "Location: Baku, Azerbaijan\n"
@@ -171,10 +167,7 @@ def run():
   with open("sitemap.xml", "w", encoding="utf-8") as f:
     f.write(sitemap_xml)
 
-  print(
-      "Скрипт выполнен успешно! Создано частей каталога с инструкцией для ИИ:"
-      f" {part_num - 1}"
-  )
+  print("Скрипт выполнен успешно! Мета-тег Bing внедрен в HTML.")
 
 
 if __name__ == "__main__":
