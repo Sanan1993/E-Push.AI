@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/stores/makiyaj/llms.txt",
+      "destination": "/api/track?file=llms.txt"
+    },
+    {
+      "source": "/stores/makiyaj/llms-full.txt",
+      "destination": "/api/track?file=llms-full.txt"
+    }
+  ]
+}
