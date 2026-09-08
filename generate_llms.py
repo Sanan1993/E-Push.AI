@@ -9,7 +9,7 @@ import pandas as pd
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv&gid=0"
 STORE_NAME = "Makiyaj Cosmetics"
 STORE_SLUG = "makiyaj"
-PART_SIZE = 200  # Снизили лимит товаров на один файл, чтобы файлы весили мало и ИИ их не терял
+PART_SIZE = 200  # Лимит товаров на один файл для легкого чтения ИИ
 
 
 def run():
@@ -38,19 +38,20 @@ def run():
   print(f"Загружено строк из таблицы: {len(df)}")
 
   items = []
-  for _, r in df.iterrows():
-    if len(r) < 2:
+  for idx, r in df.iterrows():
+    # Проверяем, чтобы в строке было достаточно колонок (до D включительно, индекс 3)
+    if len(r) < 4:
       continue
 
-    raw_title = str(r[0]).strip()
-    raw_price = str(r[1]).strip()
+    raw_title = str(r[1]).strip()  # Колонка B (Название)
+    raw_price = str(r[3]).strip()  # Колонка D (Цена)
 
-    if raw_title.lower() in [
+    # Пропускаем шапку таблицы и пустые строки
+    if idx == 0 or raw_title.lower() in [
         "nan",
         "none",
         "",
-        "название",
-        "ad",
+        "mal",
         "title",
         "наименование",
     ]:
