@@ -31,6 +31,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add stores/
+          git add .
           git commit -m "Auto-update catalog [skip ci]" || exit 0
           git push
