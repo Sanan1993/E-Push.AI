@@ -1,11 +1,13 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    { "source": "/stores/makiyaj", "destination": "/public/stores/makiyaj/index.html" },
-    { "source": "/stores/makiyaj/(.*)", "destination": "/public/stores/makiyaj/$1" },
-    { "source": "/robots.txt", "destination": "/public/robots.txt" },
-    { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
-    { "source": "/llms.txt", "destination": "/public/llms.txt" }
+  "routes": [
+    { "src": "/stores/makiyaj/catalog-part(.*).txt", "dest": "/stores/makiyaj/catalog-part$1.txt" },
+    { "src": "/stores/makiyaj/llms.txt", "dest": "/stores/makiyaj/llms.txt" },
+    { "src": "/stores/makiyaj/llms-full.txt", "dest": "/stores/makiyaj/llms-full.txt" },
+    { "src": "/stores/makiyaj/?", "dest": "/stores/makiyaj/index.html" },
+    { "src": "/robots.txt", "dest": "/robots.txt" },
+    { "src": "/sitemap.xml", "dest": "/sitemap.xml" },
+    { "src": "/llms.txt", "dest": "/llms.txt" }
   ]
 }
