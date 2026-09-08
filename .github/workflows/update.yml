@@ -32,5 +32,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
-          git commit -m "Auto-update catalog [skip ci]" || exit 0
+          git commit -m "Auto-update catalog" || exit 0
           git push
