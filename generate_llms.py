@@ -3,8 +3,8 @@ import os
 import re
 import sys
 import urllib.parse
+import urllib.request
 import pandas as pd
-import requests
 
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv&gid=0"
 STORE_NAME = "Makiyaj Cosmetics"
@@ -15,19 +15,19 @@ PART_SIZE = 1500
 def run():
   print("1. Скачивание данных из Google Таблицы...")
   try:
-    # Имитируем браузер, чтобы Google не блокировал запрос скрипта
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            " (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
-    }
-    response = requests.get(SHEET_CSV_URL, headers=headers)
-    if response.status_code != 200:
-      print(f"Ошибка HTTP: {response.status_code}")
-      sys.exit(1)
+    # Используем встроенный urllib с заголовком браузера
+    req = urllib.request.Request(
+        SHEET_CSV_URL,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            )
+        },
+    )
+    with urllib.request.urlopen(req) as response:
+      csv_data = response.read().decode("utf-8")
 
-    df = pd.read_csv(io.StringIO(response.text), header=None, dtype=str)
+    df = pd.read_csv(io.StringIO(csv_data), header=None, dtype=str)
   except Exception as e:
     print(f"Ошибка скачивания: {e}")
     sys.exit(1)
@@ -72,9 +72,7 @@ def run():
   print(f"Успешно обработано товаров: {len(items)}")
 
   if len(items) == 0:
-    print(
-        "Внимание: Ни один товар не найден. Проверьте индексы колонок (0 и 1)."
-    )
+    print("Внимание: Ни один товар не найден.")
     sys.exit(1)
 
   cards = []
