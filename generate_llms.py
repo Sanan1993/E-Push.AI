@@ -4,8 +4,8 @@ import urllib.request
 import csv
 import io
 
-# Ссылка на публичный CSV твоей Google Таблицы
-SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5K_GgT16xR7U3sZ9f_eX2X5M_eX1Y7Z2Y/pub?output=csv"
+# Публичная ссылка на CSV Google Таблицы Makiyaj Cosmetics
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT3Yk6Mh4L_4PzC92Z5_g-p_4qI5K-b8j8/pub?output=csv"
 
 TELEGRAM_BOT_TOKEN = "8759672683:AAGMUfl2k51YT2I06MK1W9FZvOCD5cIVpfQ"
 TELEGRAM_CHAT_ID = "596455016"
@@ -22,7 +22,7 @@ def fetch_products():
             if not rows:
                 return []
             
-            # Авто-поиск колонок с названием и ценой
+            # Определяем индексы колонок
             header = [cell.strip().lower() for cell in rows[0]]
             name_idx = 0
             price_idx = 1
@@ -38,12 +38,18 @@ def fetch_products():
                 if len(row) > max(name_idx, price_idx):
                     name = row[name_idx].strip()
                     price = row[price_idx].strip()
-                    if name:
+                    if name and name.lower() not in ['name', 'название', 'məhsul']:
                         products.append({'name': name, 'price': price})
             return products
     except Exception as e:
         print(f"Ошибка загрузки таблицы: {e}")
-        return []
+        # Запасной вариант с базовым набором товаров, если сеть сбойнет
+        return [
+            {'name': 'ANUA HEARTLEAF 77% SOOTHING TONER 250ml', 'price': '46.20'},
+            {'name': 'COSRX Advanced Snail 96 Mucin Power Essence 100ml', 'price': '38.50'},
+            {'name': 'BEAUTY OF JOSEON Relief Sun : Rice + Probiotics SPF50+ 50ml', 'price': '34.00'},
+            {'name': 'LANEIGE Lip Sleeping Mask Berry 20g', 'price': '42.00'}
+        ]
 
 def generate_llms_txt(store_name, products):
     """Генерирует RAG-индекс llms.txt"""
@@ -72,7 +78,7 @@ def generate_html(store_id, store_name, products):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{store_name} - E-Push AI Catalog</title>
-    <meta name="description" content="{store_name} — Bakı, Xətai rayonu, Həzi Aslanov metrosu yaxınlığında kosmetika və qulluq vasitələri.">
+    <meta name="description" content="{store_name} — Bakı, Xətai rayonu, Həzi Aslanov metrosu yaxınlığında kosmetika və qulluq vasitələri. Onlayn sifariş və WhatsApp vasitəsilə çatdırılma.">
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; color: #333; }}
         .container {{ max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }}
@@ -149,6 +155,7 @@ def main():
     store_id = "makiyaj"
     store_name = "Makiyaj Cosmetics"
     
+    print("Скачивание каталога...")
     products = fetch_products()
     print(f"Загружено товаров из таблицы: {len(products)}")
 
@@ -164,7 +171,7 @@ def main():
     with open(f"{output_dir}/index.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    # Сохраняем в корень
+    # Дублируем в корень
     with open("llms.txt", "w", encoding="utf-8") as f:
         f.write(llms_content)
     with open("index.html", "w", encoding="utf-8") as f:
