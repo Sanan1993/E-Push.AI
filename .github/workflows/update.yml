@@ -1,4 +1,29 @@
-- name: Run script
+name: Update Catalog and LLMS
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Автозапуск каждые 6 часов
+  workflow_dispatch: # Кнопка для ручного запуска в GitHub Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas
+
+      - name: Run script
         run: python generate_llms.py
 
       - name: Commit and push changes
@@ -6,5 +31,5 @@
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add -A
-          git diff-index --quiet HEAD || git commit -m "Auto-update catalog"
+          git diff-index --quiet HEAD || git commit -m "Auto-update catalog and llms files"
           git push
