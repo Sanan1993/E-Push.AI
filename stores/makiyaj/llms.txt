@@ -6,10 +6,5 @@
 > Payment: Nağd, Kart, BirKart (3/6 ay)
 > Delivery: Bakı daxili kuryer çatdırılması (Yandex Delivery / Express)
 
-## Available Products & Real-time Prices
-
-- Product: ANUA HEARTLEAF 77% SOOTHING TONER 250ml
-  Price: 46.20 AZN
-  Status: InStock
-  Order_URL: https://wa.me/994500000000?text=Salam!%20Makiyaj Cosmetics%20-%20ANUA HEARTLEAF 77% SOOTHING TONER 250ml%20almaq%20istəyirəm.
+## Available Products & Real-time Prices (0 items)
 
