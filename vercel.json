@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/stores/makiyaj/"
+    },
+    {
       "source": "/stores/makiyaj/llms.txt",
       "destination": "/api/track?file=llms.txt"
     },
