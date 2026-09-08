@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/stores/makiyaj/",
+      "permanent": false
+    }
+  ]
+}
