@@ -10,6 +10,7 @@ SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQw
 STORE_NAME = "Makiyaj Cosmetics"
 STORE_SLUG = "makiyaj"
 PART_SIZE = 200
+BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 
 
 def run():
@@ -90,7 +91,7 @@ def run():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="msvalidate.01" content="CAFD35CF8A7F03B86A676AAEEA9F724F">
+    <meta name="msvalidate.01" content="{BING_KEY}">
     <title>{STORE_NAME}</title>
     <style>
         body {{ font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }}
@@ -112,13 +113,26 @@ def run():
   store_dir = f"stores/{STORE_SLUG}"
   os.makedirs(store_dir, exist_ok=True)
 
-  # Пишем готовый HTML с товарами И в корень (для Bing), И в папку
+  # 1. Сохраняем index.html и в корень, и в папку магазина
   with open("index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
 
   with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
 
+  # 2. Создаем XML-файл верификации BingSiteAuth.xml (для 2-го способа верификации)
+  bing_xml = f"""<?xml version="1.0"?>
+<users>
+	<user>{BING_KEY}</user>
+</users>"""
+
+  with open("BingSiteAuth.xml", "w", encoding="utf-8") as f:
+    f.write(bing_xml)
+
+  with open(f"{store_dir}/BingSiteAuth.xml", "w", encoding="utf-8") as f:
+    f.write(bing_xml)
+
+  # 3. Генерация llms.txt
   ai_instruction = (
       f"# {STORE_NAME}\n"
       "Location: Baku, Azerbaijan\n"
@@ -150,6 +164,7 @@ def run():
       f.write(part_content)
     part_num += 1
 
+  # 4. Служебные файлы
   robots_txt = "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n"
   with open("robots.txt", "w", encoding="utf-8") as f:
     f.write(robots_txt)
@@ -159,11 +174,12 @@ def run():
   <url><loc>/</loc></url>
   <url><loc>/stores/makiyaj/index.html</loc></url>
   <url><loc>/stores/makiyaj/llms.txt</loc></url>
+  <url><loc>/BingSiteAuth.xml</loc></url>
 </urlset>"""
   with open("sitemap.xml", "w", encoding="utf-8") as f:
     f.write(sitemap_xml)
 
-  print("Каталог и файлы успешно сгенерированы!")
+  print("Все файлы витрины и файлы верификации Bing успешно созданы!")
 
 
 if __name__ == "__main__":
