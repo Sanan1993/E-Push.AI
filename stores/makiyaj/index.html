@@ -24,7 +24,7 @@
         📍 <strong>Ünvan:</strong> Bakı şəhəri, Xətai rayonu, Həzi Aslanov metrosunun çıxışı, Sərhəd Akademiyasının yanı, İlqar Zülfüqarov küç.<br>
         💳 <strong>Ödəniş:</strong> Nağd, Kart, BirKart (3/6 ay)
     </div>
-    <h2>Məhsul Kataloqu (22)</h2>
+    <h2>Məhsul Kataloqu</h2>
 
     <div class="product-card">
         <div>
@@ -93,4 +93,44 @@
     <div class="product-card">
         <div>
             <div class="product-title">COSRX Low pH Good Morning Gel Cleanser 150ml</div>
-            <a href="https://wa.me/994500000000?text=Salam!%20Makiyaj%20Cosmetics%20-%20COSRX%20Low%20pH%20Cleanser%20150ml%20almaq%20istəyirəm." class="buy-btn" target="_blank">WhatsApp
+            <a href="https://wa.me/994500000000?text=Salam!%20Makiyaj%20Cosmetics%20-%20COSRX%20Low%20pH%20Cleanser%20150ml%20almaq%20istəyirəm." class="buy-btn" target="_blank">WhatsApp ilə Sifariş Et</a>
+        </div>
+        <div class="product-price">28.00 AZN</div>
+    </div>
+</div>
+
+<!-- Telegram Auto-Logger Script -->
+<script>
+(function() {
+  const TELEGRAM_BOT_TOKEN = "8759672683:AAGMUfl2k51YT2I06MK1W9FZvOCD5cIVpfQ";
+  const TELEGRAM_CHAT_ID = "596455016";
+  const userAgent = navigator.userAgent || "";
+  const url = window.location.href;
+
+  const botKeywords = [
+    'perplexity', 'claudebot', 'chatgpt-user', 'gptbot', 
+    'bingbot', 'googlebot', 'yandex', 'applebot', 'facebookexternalhit', 
+    'twitterbot', 'bytespider', 'amazonbot'
+  ];
+
+  const isBot = botKeywords.some(keyword => userAgent.toLowerCase().includes(keyword));
+
+  const text = `🔔 <b>Зафиксирован визит на витрину!</b>\n\n` +
+               `📍 <b>URL:</b> <code>${url}</code>\n` +
+               `🕵️‍♂️ <b>User-Agent:</b> <code>${userAgent}</code>\n` +
+               `🤖 <b>ИИ-Бот:</b> ${isBot ? 'ДА ✅' : 'НЕТ ❌'}`;
+
+  fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: text,
+      parse_mode: 'HTML'
+    })
+  }).catch(console.error);
+})();
+</script>
+
+</body>
+</html>
