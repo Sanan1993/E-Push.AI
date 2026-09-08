@@ -1,79 +1,99 @@
+import io
 import os
 import re
 import sys
 import urllib.parse
 import pandas as pd
-import glob
+import requests
 
-SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv"
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQwRVGsMTpRujnE1ikIlHxw/export?format=csv&gid=0"
 STORE_NAME = "Makiyaj Cosmetics"
 STORE_SLUG = "makiyaj"
 PART_SIZE = 1500
 
 
 def run():
-    print("1. Скачивание данных из Google Таблицы...")
-    try:
-        # Читаем данные без заголовков, чтобы не срезать первую строку
-        df = pd.read_csv(SHEET_CSV_URL, header=None, dtype=str)
-    except Exception as e:
-        print(f"Ошибка скачивания: {e}")
-        sys.exit(1)
+  print("1. Скачивание данных из Google Таблицы...")
+  try:
+    # Имитируем браузер, чтобы Google не блокировал запрос скрипта
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            " (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+    }
+    response = requests.get(SHEET_CSV_URL, headers=headers)
+    if response.status_code != 200:
+      print(f"Ошибка HTTP: {response.status_code}")
+      sys.exit(1)
 
-    if df.empty:
-        print("Ошибка: Таблица пустая!")
-        sys.exit(1)
+    df = pd.read_csv(io.StringIO(response.text), header=None, dtype=str)
+  except Exception as e:
+    print(f"Ошибка скачивания: {e}")
+    sys.exit(1)
 
-    # Проверка на приватность (если Google отдал страницу логина вместо CSV)
-    first_cell = str(df.iloc[0, 0]).lower()
-    if '<html' in first_cell or '<!doctype' in first_cell:
-        print("\n❌ КРИТИЧЕСКАЯ ОШИБКА: Доступ к Google Таблице закрыт!")
-        print("Зайдите в Google Таблицу -> Настройки доступа -> Сделайте 'Доступно всем, у кого есть ссылка'.\n")
-        sys.exit(1)
+  if df.empty:
+    print("Ошибка: Таблица пустая!")
+    sys.exit(1)
 
-    print(f"Загружено строк из таблицы: {len(df)}")
+  print(f"Загружено строк из таблицы: {len(df)}")
 
-    items = []
-    for _, r in df.iterrows():
-        if len(r) < 2:
-            continue
-            
-        raw_title = str(r[0]).strip()
-        raw_price = str(r[1]).strip()
+  items = []
+  for _, r in df.iterrows():
+    if len(r) < 2:
+      continue
 
-        # Фильтр пустых и служебных строк
-        if raw_title.lower() in ["nan", "none", "", "название", "ad", "title", "наименование"]:
-            continue
-        if re.search(r"Anbar|Склад|Итого|Total|Əsas", raw_title, flags=re.IGNORECASE):
-            continue
+    raw_title = str(r[0]).strip()
+    raw_price = str(r[1]).strip()
 
-        price_val = raw_price if raw_price.lower() not in ["nan", "none", ""] else "По запросу"
-        if price_val != "По запросу" and "azn" not in price_val.lower():
-            price_val = f"{price_val} AZN"
+    if raw_title.lower() in [
+        "nan",
+        "none",
+        "",
+        "название",
+        "ad",
+        "title",
+        "наименование",
+    ]:
+      continue
+    if re.search(r"Anbar|Склад|Итого|Total|Əsas", raw_title, flags=re.IGNORECASE):
+      continue
 
-        items.append({"title": raw_title, "price": price_val})
+    price_val = (
+        raw_price
+        if raw_price.lower() not in ["nan", "none", ""]
+        else "По запросу"
+    )
+    if price_val != "По запросу" and "azn" not in price_val.lower():
+      price_val = f"{price_val} AZN"
 
-    print(f"Успешно обработано товаров: {len(items)}")
-    
-    if len(items) == 0:
-        print("Внимание: Ни один товар не найден. Проверьте содержимое колонок.")
-        sys.exit(1)
+    items.append({"title": raw_title, "price": price_val})
 
-    cards = []
-    llms_all_lines = []
+  print(f"Успешно обработано товаров: {len(items)}")
 
-    for i in items:
-        wa_msg = urllib.parse.quote(f"Salam! {STORE_NAME} - {i['title']} ({i['price']}) almaq istəyirəm.")
-        wa_link = f"https://wa.me/994500000000?text={wa_msg}"
-        cards.append(f"""
+  if len(items) == 0:
+    print(
+        "Внимание: Ни один товар не найден. Проверьте индексы колонок (0 и 1)."
+    )
+    sys.exit(1)
+
+  cards = []
+  llms_all_lines = []
+
+  for i in items:
+    wa_msg = urllib.parse.quote(
+        f"Salam! {STORE_NAME} - {i['title']} ({i['price']}) almaq istəyirəm."
+    )
+    wa_link = f"https://wa.me/994500000000?text={wa_msg}"
+    cards.append(f"""
         <div class="card">
             <div class="title">{i['title']}</div>
             <div class="price">{i['price']}</div>
             <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
         </div>""")
-        llms_all_lines.append(f"- {i['title']} | {i['price']} | {wa_link}")
+    llms_all_lines.append(f"- {i['title']} | {i['price']} | {wa_link}")
 
-    html_content = f"""<!DOCTYPE html>
+  html_content = f"""<!DOCTYPE html>
 <html lang="az">
 <head>
     <meta charset="UTF-8">
@@ -95,47 +115,55 @@ def run():
 </body>
 </html>"""
 
-    store_dir = f"stores/{STORE_SLUG}"
-    os.makedirs(store_dir, exist_ok=True)
+  store_dir = f"stores/{STORE_SLUG}"
+  os.makedirs(store_dir, exist_ok=True)
 
-    # 1. Зачистка старых частей каталога перед записью новых
-    for f in glob.glob(f"{store_dir}/catalog-part*.txt"):
-        try:
-            os.remove(f)
-        except OSError:
-            pass
+  # Сохраняем файлы
+  with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+  with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
 
-    # 2. Сохраняем HTML
-    with open("index.html", "w", encoding="utf-8") as f: f.write(html_content)
-    with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f: f.write(html_content)
+  full_llms = (
+      f"# {STORE_NAME}\nLocation: Baku, Azerbaijan\nTotal:"
+      f" {len(items)}\n\n"
+      + "\n".join(llms_all_lines)
+  )
+  with open("llms.txt", "w", encoding="utf-8") as f:
+    f.write(full_llms)
+  with open(f"{store_dir}/llms.txt", "w", encoding="utf-8") as f:
+    f.write(full_llms)
+  with open(f"{store_dir}/llms-full.txt", "w", encoding="utf-8") as f:
+    f.write(full_llms)
 
-    # 3. Сохраняем LLMS
-    full_llms = f"# {STORE_NAME}\nLocation: Baku, Azerbaijan\nTotal: {len(items)}\n\n" + "\n".join(llms_all_lines)
-    with open("llms.txt", "w", encoding="utf-8") as f: f.write(full_llms)
-    with open(f"{store_dir}/llms.txt", "w", encoding="utf-8") as f: f.write(full_llms)
-    with open(f"{store_dir}/llms-full.txt", "w", encoding="utf-8") as f: f.write(full_llms)
+  part_num = 1
+  for start_idx in range(0, len(llms_all_lines), PART_SIZE):
+    chunk = llms_all_lines[start_idx : start_idx + PART_SIZE]
+    part_content = (
+        f"# {STORE_NAME} - Part {part_num}\nTotal in part:"
+        f" {len(chunk)}\n\n"
+        + "\n".join(chunk)
+    )
+    with open(
+        f"{store_dir}/catalog-part{part_num}.txt", "w", encoding="utf-8"
+    ) as f:
+      f.write(part_content)
+    part_num += 1
 
-    # 4. Генерируем части
-    part_num = 1
-    for start_idx in range(0, len(llms_all_lines), PART_SIZE):
-        chunk = llms_all_lines[start_idx : start_idx + PART_SIZE]
-        part_content = f"# {STORE_NAME} - Part {part_num}\nTotal in part: {len(chunk)}\n\n" + "\n".join(chunk)
-        with open(f"{store_dir}/catalog-part{part_num}.txt", "w", encoding="utf-8") as f:
-            f.write(part_content)
-        part_num += 1
-
-    # 5. Robots & Sitemap
-    robots_txt = "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n"
-    with open("robots.txt", "w", encoding="utf-8") as f: f.write(robots_txt)
-    sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
+  robots_txt = "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n"
+  with open("robots.txt", "w", encoding="utf-8") as f:
+    f.write(robots_txt)
+  sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>/</loc></url>
   <url><loc>/stores/makiyaj/index.html</loc></url>
   <url><loc>/stores/makiyaj/llms.txt</loc></url>
 </urlset>"""
-    with open("sitemap.xml", "w", encoding="utf-8") as f: f.write(sitemap_xml)
+  with open("sitemap.xml", "w", encoding="utf-8") as f:
+    f.write(sitemap_xml)
 
-    print(f"Скрипт выполнен! Создано частей каталога: {part_num - 1}")
+  print(f"Скрипт выполнен! Создано частей каталога: {part_num - 1}")
+
 
 if __name__ == "__main__":
-    run()
+  run()
