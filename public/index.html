@@ -13,18 +13,6 @@
         .price { font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 10px; }
         .btn { text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 8px; border-radius: 5px; font-weight: bold; font-size: 13px; }
     </style>
-    
-    <script>
-        fetch('/api/track-bot', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                path: window.location.pathname,
-                ua: navigator.userAgent
-            })
-        }).catch(()=>{});
-    </script>
-    
 </head>
 <body>
     <h1>Makiyaj Cosmetics</h1>
