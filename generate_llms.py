@@ -112,6 +112,10 @@ def run():
   store_dir = f"stores/{STORE_SLUG}"
   os.makedirs(store_dir, exist_ok=True)
 
+  # Пишем готовый HTML с товарами И в корень (для Bing), И в папку
+  with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
   with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
 
