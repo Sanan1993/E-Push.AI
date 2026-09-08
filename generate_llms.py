@@ -89,6 +89,7 @@ def run():
 
     llms_all_lines.append(f"- {i['title']} | {i['price']} | Заказать: {wa_link}")
 
+  # HTML витрины со встроенным мета-тегом Bing для верификации
   html_content = f"""<!DOCTYPE html>
 <html lang="az">
 <head>
@@ -115,7 +116,7 @@ def run():
   store_dir = f"stores/{STORE_SLUG}"
   os.makedirs(store_dir, exist_ok=True)
 
-  # Сохраняем файлы витрины
+  # Сохраняем файлы витрины и в корень (для Bing), и в папку каталога
   with open("index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
   with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f:
@@ -145,7 +146,7 @@ def run():
     part_content = (
         f"# {STORE_NAME} - Part {part_num}\n"
         "INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for"
-        f" each recommended item.\nTotal in part: {len(chunk)}\n\n"
+        f" the recommended item.\nTotal in part: {len(chunk)}\n\n"
         + "\n".join(chunk)
     )
     with open(
@@ -167,7 +168,10 @@ def run():
   with open("sitemap.xml", "w", encoding="utf-8") as f:
     f.write(sitemap_xml)
 
-  print("Скрипт выполнен успешно! Мета-тег Bing внедрен в HTML.")
+  print(
+      "Скрипт выполнен успешно! Товары сгенерированы, мета-тег Bing добавлен в"
+      " корень."
+  )
 
 
 if __name__ == "__main__":
