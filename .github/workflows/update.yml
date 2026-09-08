@@ -2,8 +2,8 @@ name: Daily Catalog Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
+    - cron: '0 */6 * * *'  # Запуск каждые 6 часов
+  workflow_dispatch:      # Кнопка для ручного запуска
 
 permissions:
   contents: write
@@ -31,6 +31,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add stores/
+          git add .
           git commit -m "Auto-update catalog [skip ci]" || exit 0
           git push
