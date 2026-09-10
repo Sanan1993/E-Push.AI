@@ -1,5 +1,6 @@
-# Makiyaj Cosmetics - Part 24
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
+# Makiyaj Cosmetics (Azi Aslanov) - Part 24
+Location: Azi Aslanov metro, Baku
+INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
 Total in part: 200
 
 - INNAMORE Super Matt 20nero, 5 | 7,4 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20INNAMORE%20Super%20Matt%2020nero%2C%205

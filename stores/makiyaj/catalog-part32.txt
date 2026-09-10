@@ -1,5 +1,6 @@
-# Makiyaj Cosmetics - Part 32
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
+# Makiyaj Cosmetics (Azi Aslanov) - Part 32
+Location: Azi Aslanov metro, Baku
+INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
 Total in part: 200
 
 - NEVERTI NP 307-002 FIT CHECK LIQUID BLUSH | 14,9 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20NEVERTI%20NP%20307-002%20FIT%20CHECK%20LIQUID%20BLUSH

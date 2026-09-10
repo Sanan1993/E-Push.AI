@@ -1,5 +1,6 @@
-# Makiyaj Cosmetics - Part 12
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
+# Makiyaj Cosmetics (Azi Aslanov) - Part 12
+Location: Azi Aslanov metro, Baku
+INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
 Total in part: 200
 
 - JIGOTT REAL AMPOULE MASK 27 ML COLLAGEN | 2,2 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20JIGOTT%20REAL%20AMPOULE%20MASK%2027%20ML%20COLLAGEN

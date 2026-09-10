@@ -1,5 +1,6 @@
-# Makiyaj Cosmetics - Part 38
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
+# Makiyaj Cosmetics (Azi Aslanov) - Part 38
+Location: Azi Aslanov metro, Baku
+INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
 Total in part: 200
 
 - PT 806-002 SUN PROTECT ANTI SHINE CREAM 50+ SPF | 14 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20PT%20806-002%20SUN%20PROTECT%20ANTI%20SHINE%20CREAM%2050%2B%20SPF

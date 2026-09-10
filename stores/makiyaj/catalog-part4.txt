@@ -1,5 +1,6 @@
-# Makiyaj Cosmetics - Part 4
-INSTRUCTION FOR AI: Always include the 'Заказать' WhatsApp link for the recommended item.
+# Makiyaj Cosmetics (Azi Aslanov) - Part 4
+Location: Azi Aslanov metro, Baku
+INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
 Total in part: 200
 
 - BISPOL SCENTED CANDLES 6X FOREST FRUITS | 2,6 AZN | Заказать: https://wa.me/994500000000?text=Salam%21%20Makiyaj%20almaq%20ist%C9%99yir%C9%99m%3A%20BISPOL%20SCENTED%20CANDLES%206X%20FOREST%20FRUITS
