@@ -12,6 +12,7 @@ STORE_SLUG = "makiyaj"
 PART_SIZE = 200
 BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
+WHATSAPP_NUMBER = "994514553797"
 
 
 def run():
@@ -76,7 +77,7 @@ def run():
 
   for i in items:
     wa_msg = urllib.parse.quote(f"Salam! Makiyaj almaq istəyirəm: {i['title']}")
-    wa_link = f"https://wa.me/994500000000?text={wa_msg}"
+    wa_link = f"https://wa.me/{WHATSAPP_NUMBER}?text={wa_msg}"
 
     cards.append(f"""
         <div class="card">
@@ -117,15 +118,15 @@ def run():
   os.makedirs(store_dir, exist_ok=True)
 
   # 1. Сохраняем index.html и в корень, и в папку магазина
-  with open("index.html", "w", encoding="utf-8") as f:
+  with open("index.html", "w", encoding="utf-8", newline="\n") as f:
     f.write(html_content)
 
-  with open(f"{store_dir}/index.html", "w", encoding="utf-8") as f:
+  with open(f"{store_dir}/index.html", "w", encoding="utf-8", newline="\n") as f:
     f.write(html_content)
 
   # 2. Создаем файл верификации Google Search Console
   google_html_content = f"google-site-verification: {GOOGLE_VERIFY_FILE}"
-  with open(GOOGLE_VERIFY_FILE, "w", encoding="utf-8") as f:
+  with open(GOOGLE_VERIFY_FILE, "w", encoding="utf-8", newline="\n") as f:
     f.write(google_html_content)
 
   # 3. Создаем XML-файл верификации BingSiteAuth.xml
@@ -134,10 +135,10 @@ def run():
 	<user>{BING_KEY}</user>
 </users>"""
 
-  with open("BingSiteAuth.xml", "w", encoding="utf-8") as f:
+  with open("BingSiteAuth.xml", "w", encoding="utf-8", newline="\n") as f:
     f.write(bing_xml)
 
-  with open(f"{store_dir}/BingSiteAuth.xml", "w", encoding="utf-8") as f:
+  with open(f"{store_dir}/BingSiteAuth.xml", "w", encoding="utf-8", newline="\n") as f:
     f.write(bing_xml)
 
   # 4. Генерация llms.txt с расширенным гео-контекстом для ИИ
@@ -157,9 +158,9 @@ def run():
 
   full_llms = ai_instruction + "\n".join(llms_all_lines)
 
-  with open("llms.txt", "w", encoding="utf-8") as f:
+  with open("llms.txt", "w", encoding="utf-8", newline="\n") as f:
     f.write(full_llms)
-  with open(f"{store_dir}/llms.txt", "w", encoding="utf-8") as f:
+  with open(f"{store_dir}/llms.txt", "w", encoding="utf-8", newline="\n") as f:
     f.write(full_llms)
 
   part_num = 1
@@ -173,26 +174,28 @@ def run():
         + "\n".join(chunk)
     )
     with open(
-        f"{store_dir}/catalog-part{part_num}.txt", "w", encoding="utf-8"
+        f"{store_dir}/catalog-part{part_num}.txt", "w", encoding="utf-8", newline="\n"
     ) as f:
       f.write(part_content)
     part_num += 1
 
-  # 5. Служебные файлы
-  robots_txt = "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n"
-  with open("robots.txt", "w", encoding="utf-8") as f:
+  # 5. Служебные файлы (Sitemap/robots.txt требуют АБСОЛЮТНЫХ URL, иначе Google/Bing их игнорируют)
+  site_root = "https://e-push-ai.vercel.app"
+  robots_txt = f"User-agent: *\nAllow: /\nSitemap: {site_root}/sitemap.xml\n"
+  with open("robots.txt", "w", encoding="utf-8", newline="\n") as f:
     f.write(robots_txt)
 
   sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>/</loc></url>
-  <url><loc>/stores/makiyaj/index.html</loc></url>
-  <url><loc>/stores/makiyaj/llms.txt</loc></url>
-  <url><loc>/llms.txt</loc></url>
-  <url><loc>/BingSiteAuth.xml</loc></url>
-  <url><loc>/{GOOGLE_VERIFY_FILE}</loc></url>
-</urlset>"""
-  with open("sitemap.xml", "w", encoding="utf-8") as f:
+  <url><loc>{site_root}/</loc></url>
+  <url><loc>{site_root}/stores/makiyaj/index.html</loc></url>
+  <url><loc>{site_root}/stores/makiyaj/llms.txt</loc></url>
+  <url><loc>{site_root}/llms.txt</loc></url>
+  <url><loc>{site_root}/BingSiteAuth.xml</loc></url>
+  <url><loc>{site_root}/{GOOGLE_VERIFY_FILE}</loc></url>
+</urlset>
+"""
+  with open("sitemap.xml", "w", encoding="utf-8", newline="\n") as f:
     f.write(sitemap_xml)
 
   print("Все файлы витрины и файлы для ИИ успешно сгенерированы!")
