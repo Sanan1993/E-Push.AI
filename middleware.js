@@ -18,14 +18,13 @@ export const config = {
 export default function middleware(request, event) {
   const ua = request.headers.get('user-agent') || '';
   const isBot = BOT_PATTERNS.some((re) => re.test(ua));
-  const geo = request.geo || {};
 
   const payload = {
     type: isBot ? 'bot' : 'visit',
     path: new URL(request.url).pathname,
     ua,
-    country: geo.country || '',
-    city: geo.city || '',
+    country: request.headers.get('x-vercel-ip-country') || '',
+    city: request.headers.get('x-vercel-ip-city') || '',
     referrer: request.headers.get('referer') || '',
   };
 
