@@ -13,6 +13,7 @@ PART_SIZE = 200
 BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
 WHATSAPP_NUMBER = "994514553797"
+SITE_ROOT = "https://e-push-ai.vercel.app"
 
 
 def run():
@@ -77,7 +78,13 @@ def run():
 
   for i in items:
     wa_msg = urllib.parse.quote(f"Salam! Makiyaj almaq istəyirəm: {i['title']}")
-    wa_link = f"https://wa.me/{WHATSAPP_NUMBER}?text={wa_msg}"
+    real_wa_link = f"https://wa.me/{WHATSAPP_NUMBER}?text={wa_msg}"
+    # Отдаём ссылку на свой трекинг-редирект вместо прямой wa.me, чтобы считать
+    # клики (в т.ч. когда ссылку пользователю показывает ИИ из llms.txt).
+    wa_link = (
+        f"{SITE_ROOT}/api/go?to={urllib.parse.quote(real_wa_link, safe='')}"
+        f"&t={urllib.parse.quote(i['title'])}"
+    )
 
     cards.append(f"""
         <div class="card">
@@ -180,19 +187,18 @@ def run():
     part_num += 1
 
   # 5. Служебные файлы (Sitemap/robots.txt требуют АБСОЛЮТНЫХ URL, иначе Google/Bing их игнорируют)
-  site_root = "https://e-push-ai.vercel.app"
-  robots_txt = f"User-agent: *\nAllow: /\nSitemap: {site_root}/sitemap.xml\n"
+  robots_txt = f"User-agent: *\nAllow: /\nSitemap: {SITE_ROOT}/sitemap.xml\n"
   with open("robots.txt", "w", encoding="utf-8", newline="\n") as f:
     f.write(robots_txt)
 
   sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>{site_root}/</loc></url>
-  <url><loc>{site_root}/stores/makiyaj/index.html</loc></url>
-  <url><loc>{site_root}/stores/makiyaj/llms.txt</loc></url>
-  <url><loc>{site_root}/llms.txt</loc></url>
-  <url><loc>{site_root}/BingSiteAuth.xml</loc></url>
-  <url><loc>{site_root}/{GOOGLE_VERIFY_FILE}</loc></url>
+  <url><loc>{SITE_ROOT}/</loc></url>
+  <url><loc>{SITE_ROOT}/stores/makiyaj/index.html</loc></url>
+  <url><loc>{SITE_ROOT}/stores/makiyaj/llms.txt</loc></url>
+  <url><loc>{SITE_ROOT}/llms.txt</loc></url>
+  <url><loc>{SITE_ROOT}/BingSiteAuth.xml</loc></url>
+  <url><loc>{SITE_ROOT}/{GOOGLE_VERIFY_FILE}</loc></url>
 </urlset>
 """
   with open("sitemap.xml", "w", encoding="utf-8", newline="\n") as f:
