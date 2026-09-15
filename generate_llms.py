@@ -1,4 +1,5 @@
 import io
+import json
 import os
 import re
 import sys
@@ -14,6 +15,17 @@ BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
 WHATSAPP_NUMBER = "994514553797"
 SITE_ROOT = "https://e-push-ai.vercel.app"
+
+
+def parse_price_azn(price_val):
+  """"5,5 AZN" -> 5.5; "По запросу" или нечисловая цена -> None."""
+  if price_val == "По запросу" or "AZN" not in price_val:
+    return None
+  numeric = price_val.replace("AZN", "").strip().replace(",", ".")
+  try:
+    return float(numeric)
+  except ValueError:
+    return None
 
 
 def run():
@@ -75,6 +87,7 @@ def run():
 
   cards = []
   llms_all_lines = []
+  offers = []
 
   for i in items:
     wa_msg = urllib.parse.quote(f"Salam! Makiyaj almaq istəyirəm: {i['title']}")
@@ -95,6 +108,35 @@ def run():
 
     llms_all_lines.append(f"- {i['title']} | {i['price']} | Заказать: {wa_link}")
 
+    offer = {
+        "@type": "Offer",
+        "itemOffered": {"@type": "Product", "name": i["title"]},
+        "priceCurrency": "AZN",
+        "availability": "https://schema.org/InStock",
+        "url": wa_link,
+    }
+    price_num = parse_price_azn(i["price"])
+    if price_num is not None:
+      offer["price"] = price_num
+    offers.append(offer)
+
+  json_ld = {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": STORE_NAME,
+      "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Baku",
+          "addressCountry": "AZ",
+      },
+      "makesOffer": offers,
+  }
+  json_ld_script = (
+      '<script type="application/ld+json">'
+      + json.dumps(json_ld, ensure_ascii=False).replace("</", "<\\/")
+      + "</script>"
+  )
+
   html_content = f"""<!DOCTYPE html>
 <html lang="az">
 <head>
@@ -102,6 +144,7 @@ def run():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="msvalidate.01" content="{BING_KEY}">
     <title>{STORE_NAME} - Azi Aslanov, Baku</title>
+    {json_ld_script}
     <style>
         body {{ font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }}
         h1 {{ text-align: center; color: #111; margin-bottom: 5px; }}
