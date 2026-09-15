@@ -1,7 +1,6 @@
 // Редирект-трекер для заказов через WhatsApp.
 // Использование: /api/go?to=<encodeURIComponent(wa.me ссылка)>&t=<название товара>
-// TODO: заменить на реальный URL Google Apps Script Web App (см. stores/makiyaj/apps-script-stats.gs)
-const STATS_ENDPOINT = 'PASTE_APPS_SCRIPT_URL_HERE';
+const STATS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwCWuH3PKmOEc8ApiNBH4JXiIZjn_zYyZzdQE876BsMwyVR0iR1kHcmkwQsdmsoasqn/exec';
 
 module.exports = async (req, res) => {
   const { to, t } = req.query;
