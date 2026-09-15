@@ -16,6 +16,16 @@ const BOT_PATTERNS = [
 
 module.exports = async (req, res) => {
   const { to, t } = req.query;
+  const ua = req.headers['user-agent'] || '';
+
+  // /api/go уже запрещён в robots.txt. Это — подстраховка на случай ботов,
+  // которые его игнорируют или ещё не перечитали правила: не тратим вызов
+  // Apps Script и не уводим их в WhatsApp, отвечаем сразу.
+  if (BOT_PATTERNS.some((re) => re.test(ua))) {
+    res.statusCode = 403;
+    res.end('Disallowed for crawlers, see /robots.txt');
+    return;
+  }
 
   let target;
   try {
@@ -32,15 +42,12 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const ua = req.headers['user-agent'] || '';
-  const isBot = BOT_PATTERNS.some((re) => re.test(ua));
-
   try {
     await fetch(STATS_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: isBot ? 'bot-click' : 'click',
+        type: 'click',
         path: '/go',
         product: t || '',
         ua,
