@@ -2,6 +2,18 @@
 // Использование: /api/go?to=<encodeURIComponent(wa.me ссылка)>&t=<название товара>
 const STATS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwCWuH3PKmOEc8ApiNBH4JXiIZjn_zYyZzdQE876BsMwyVR0iR1kHcmkwQsdmsoasqn/exec';
 
+// Тот же список, что в middleware.js: краулеры обходят все ссылки на странице
+// (в т.ч. все 9000+ "Заказать"), и без этого их клики попадают в статистику
+// как реальные покупательские намерения.
+const BOT_PATTERNS = [
+  /GPTBot/i, /ChatGPT-User/i, /OAI-SearchBot/i,
+  /PerplexityBot/i, /Perplexity-User/i,
+  /ClaudeBot/i, /Claude-User/i, /anthropic-ai/i,
+  /Google-Extended/i, /Googlebot/i, /GoogleOther/i,
+  /Bingbot/i, /CCBot/i, /Applebot/i, /YandexBot/i,
+  /facebookexternalhit/i, /DuckDuckBot/i, /Bytespider/i, /cohere-ai/i,
+];
+
 module.exports = async (req, res) => {
   const { to, t } = req.query;
 
@@ -20,15 +32,18 @@ module.exports = async (req, res) => {
     return;
   }
 
+  const ua = req.headers['user-agent'] || '';
+  const isBot = BOT_PATTERNS.some((re) => re.test(ua));
+
   try {
     await fetch(STATS_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: 'click',
+        type: isBot ? 'bot-click' : 'click',
         path: '/go',
         product: t || '',
-        ua: req.headers['user-agent'] || '',
+        ua,
         referrer: req.headers['referer'] || '',
         country: req.headers['x-vercel-ip-country'] || '',
         city: req.headers['x-vercel-ip-city'] || '',

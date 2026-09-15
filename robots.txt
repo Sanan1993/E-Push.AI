@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
+Disallow: /api/go
 Sitemap: https://e-push-ai.vercel.app/sitemap.xml

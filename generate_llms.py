@@ -230,7 +230,15 @@ def run():
     part_num += 1
 
   # 5. Служебные файлы (Sitemap/robots.txt требуют АБСОЛЮТНЫХ URL, иначе Google/Bing их игнорируют)
-  robots_txt = f"User-agent: *\nAllow: /\nSitemap: {SITE_ROOT}/sitemap.xml\n"
+  robots_txt = (
+      "User-agent: *\n"
+      "Allow: /\n"
+      # /api/go — служебный трекинг-редирект на WhatsApp, не для обхода ботами
+      # (иначе краулер кликает по всем 9000+ ссылкам "Заказать" на странице
+      # и засоряет статистику кликов).
+      "Disallow: /api/go\n"
+      f"Sitemap: {SITE_ROOT}/sitemap.xml\n"
+  )
   with open("robots.txt", "w", encoding="utf-8", newline="\n") as f:
     f.write(robots_txt)
 
