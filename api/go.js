@@ -42,12 +42,16 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // См. middleware.js: настоящий переход по ссылке несёт Sec-Fetch-Mode: navigate,
+  // простые скрипты — как правило, нет.
+  const looksHuman = req.headers['sec-fetch-mode'] === 'navigate';
+
   try {
     await fetch(STATS_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: 'click',
+        type: looksHuman ? 'click-real' : 'click-unclear',
         path: '/go',
         product: t || '',
         ua,

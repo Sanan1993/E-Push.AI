@@ -18,9 +18,22 @@ export const config = {
 export default function middleware(request, event) {
   const ua = request.headers.get('user-agent') || '';
   const isBot = BOT_PATTERNS.some((re) => re.test(ua));
+  // Реальные браузеры при обычном переходе по ссылке/адресу сами добавляют
+  // Sec-Fetch-Mode: navigate. Простые скрипты и большинство краулеров это не
+  // умеют — используем как признак "похоже на живого человека".
+  const looksHuman = request.headers.get('sec-fetch-mode') === 'navigate';
+
+  let type;
+  if (isBot) {
+    type = 'bot';
+  } else if (looksHuman) {
+    type = 'visit-real';
+  } else {
+    type = 'visit-unclear';
+  }
 
   const payload = {
-    type: isBot ? 'bot' : 'visit',
+    type,
     path: new URL(request.url).pathname,
     ua,
     ip: (request.headers.get('x-forwarded-for') || '').split(',')[0].trim(),
