@@ -11,6 +11,9 @@ SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQw
 STORE_NAME = "Makiyaj Cosmetics"
 STORE_SLUG = "makiyaj"
 PART_SIZE = 200
+# Одна HTML-страница на все 9000+ товаров весила ~9 МБ — Bing явно пометил
+# это как проблему. Режем витрину на страницы по HTML_PAGE_SIZE товаров.
+HTML_PAGE_SIZE = 300
 BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
 WHATSAPP_NUMBER = "994514553797"
@@ -34,6 +37,82 @@ def parse_price_azn(price_val):
     return float(numeric)
   except ValueError:
     return None
+
+
+def build_html_page(page_cards, page_offers, page_num, total_pages):
+  """Одна страница витрины: свой canonical и свой JSON-LD только на её товары
+  (иначе разбиение теряет смысл — весь Schema.org дублировался бы на каждой
+  странице)."""
+  if page_num == 1:
+    canonical_url = STORE_CANONICAL_URL
+  else:
+    canonical_url = f"{SITE_ROOT}/stores/{STORE_SLUG}/page-{page_num}.html"
+
+  json_ld = {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": STORE_NAME,
+      "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Baku",
+          "addressCountry": "AZ",
+      },
+      "makesOffer": page_offers,
+  }
+  json_ld_script = (
+      '<script type="application/ld+json">'
+      + json.dumps(json_ld, ensure_ascii=False).replace("</", "<\\/")
+      + "</script>"
+  )
+
+  nav_links = []
+  if page_num > 1:
+    prev_href = STORE_CANONICAL_URL if page_num == 2 else f"page-{page_num - 1}.html"
+    nav_links.append(f'<a href="{prev_href}" class="page-link">&larr; Əvvəlki</a>')
+  if page_num < total_pages:
+    nav_links.append(
+        f'<a href="page-{page_num + 1}.html" class="page-link">Növbəti &rarr;</a>'
+    )
+  pagination_html = (
+      f'<div class="pagination">{"".join(nav_links)}'
+      f'<span class="page-info">Səhifə {page_num}/{total_pages}</span></div>'
+  )
+
+  title_suffix = "" if page_num == 1 else f" - Səhifə {page_num}"
+
+  return f"""<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="msvalidate.01" content="{BING_KEY}">
+    <meta name="description" content="{STORE_DESCRIPTION}">
+    <link rel="canonical" href="{canonical_url}">
+    <title>{STORE_NAME} - Azi Aslanov, Baku{title_suffix}</title>
+    {json_ld_script}
+    <style>
+        body {{ font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }}
+        h1 {{ text-align: center; color: #111; margin-bottom: 5px; }}
+        p.subtitle {{ text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }}
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }}
+        .card {{ background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }}
+        .title {{ font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #222; line-height: 1.3; }}
+        .price {{ font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 12px; }}
+        .btn {{ text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 13px; transition: background 0.2s; }}
+        .btn:hover {{ background: #1eb857; }}
+        .pagination {{ display: flex; justify-content: center; align-items: center; gap: 20px; margin: 30px 0 10px; font-size: 14px; }}
+        .page-link {{ color: #0d7a5f; text-decoration: none; font-weight: 600; }}
+        .page-link:hover {{ text-decoration: underline; }}
+        .page-info {{ color: #666; }}
+    </style>
+</head>
+<body>
+    <h1>{STORE_NAME}</h1>
+    <p class="subtitle">Bakı, Həzi Aslanov metrosu yaxınlığı | Koreya kosmetikası və makiyaj malları</p>
+    <div class="grid">{"".join(page_cards)}</div>
+    {pagination_html}
+</body>
+</html>"""
 
 
 def run():
@@ -128,61 +207,37 @@ def run():
       offer["price"] = price_num
     offers.append(offer)
 
-  json_ld = {
-      "@context": "https://schema.org",
-      "@type": "Store",
-      "name": STORE_NAME,
-      "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Baku",
-          "addressCountry": "AZ",
-      },
-      "makesOffer": offers,
-  }
-  json_ld_script = (
-      '<script type="application/ld+json">'
-      + json.dumps(json_ld, ensure_ascii=False).replace("</", "<\\/")
-      + "</script>"
-  )
-
-  html_content = f"""<!DOCTYPE html>
-<html lang="az">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="msvalidate.01" content="{BING_KEY}">
-    <meta name="description" content="{STORE_DESCRIPTION}">
-    <link rel="canonical" href="{STORE_CANONICAL_URL}">
-    <title>{STORE_NAME} - Azi Aslanov, Baku</title>
-    {json_ld_script}
-    <style>
-        body {{ font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }}
-        h1 {{ text-align: center; color: #111; margin-bottom: 5px; }}
-        p.subtitle {{ text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }}
-        .card {{ background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }}
-        .title {{ font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #222; line-height: 1.3; }}
-        .price {{ font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 12px; }}
-        .btn {{ text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 13px; transition: background 0.2s; }}
-        .btn:hover {{ background: #1eb857; }}
-    </style>
-</head>
-<body>
-    <h1>{STORE_NAME}</h1>
-    <p class="subtitle">Bakı, Həzi Aslanov metrosu yaxınlığı | Koreya kosmetikası və makiyaj malları</p>
-    <div class="grid">{"".join(cards)}</div>
-</body>
-</html>"""
-
   store_dir = f"stores/{STORE_SLUG}"
   os.makedirs(store_dir, exist_ok=True)
 
-  # 1. Сохраняем index.html и в корень, и в папку магазина
-  with open("index.html", "w", encoding="utf-8", newline="\n") as f:
-    f.write(html_content)
+  # 1. Разбиваем витрину на страницы по HTML_PAGE_SIZE товаров (была одна
+  # страница на ~9 МБ — Bing явно отметил это как проблему).
+  total_pages = max(1, (len(cards) + HTML_PAGE_SIZE - 1) // HTML_PAGE_SIZE)
 
-  with open(f"{store_dir}/index.html", "w", encoding="utf-8", newline="\n") as f:
-    f.write(html_content)
+  # Подчищаем "лишние" страницы с прошлых запусков, если товаров стало меньше
+  # (иначе старые page-N.html останутся висеть с устаревшим содержимым).
+  for old_file in os.listdir(store_dir):
+    m = re.match(r"^page-(\d+)\.html$", old_file)
+    if m and int(m.group(1)) > total_pages:
+      os.remove(os.path.join(store_dir, old_file))
+  for page_num in range(1, total_pages + 1):
+    start = (page_num - 1) * HTML_PAGE_SIZE
+    end = start + HTML_PAGE_SIZE
+    page_html = build_html_page(
+        cards[start:end], offers[start:end], page_num, total_pages
+    )
+    if page_num == 1:
+      # Страница 1 — она же canonical-адрес витрины, дублируется и в корень,
+      # и в папку магазина (см. STORE_CANONICAL_URL выше).
+      with open("index.html", "w", encoding="utf-8", newline="\n") as f:
+        f.write(page_html)
+      with open(f"{store_dir}/index.html", "w", encoding="utf-8", newline="\n") as f:
+        f.write(page_html)
+    else:
+      with open(
+          f"{store_dir}/page-{page_num}.html", "w", encoding="utf-8", newline="\n"
+      ) as f:
+        f.write(page_html)
 
   # 2. Создаем файл верификации Google Search Console
   google_html_content = f"google-site-verification: {GOOGLE_VERIFY_FILE}"
@@ -254,9 +309,14 @@ def run():
 
   # "/" не включаем: это редирект на STORE_CANONICAL_URL (см. vercel.json), а не
   # самостоятельная страница — держать редиректящий URL в sitemap сбивает Google.
+  page_urls = "\n".join(
+      f"  <url><loc>{SITE_ROOT}/stores/{STORE_SLUG}/page-{n}.html</loc></url>"
+      for n in range(2, total_pages + 1)
+  )
   sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>{STORE_CANONICAL_URL}</loc></url>
+{page_urls}
   <url><loc>{SITE_ROOT}/stores/makiyaj/llms.txt</loc></url>
   <url><loc>{SITE_ROOT}/llms.txt</loc></url>
   <url><loc>{SITE_ROOT}/BingSiteAuth.xml</loc></url>
