@@ -1,6 +1,6 @@
 // Редирект-трекер для заказов через WhatsApp.
 // Использование: /api/go?to=<encodeURIComponent(wa.me ссылка)>&t=<название товара>
-const STATS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwCWuH3PKmOEc8ApiNBH4JXiIZjn_zYyZzdQE876BsMwyVR0iR1kHcmkwQsdmsoasqn/exec';
+const STATS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx7cmg-ylZ4HazmA6rpQY8STyBmD09i-AkenAVS46Qdo6FgKZlk0NAM3Fugh79-dmY0/exec';
 
 // Тот же список, что в middleware.js: краулеры обходят все ссылки на странице
 // (в т.ч. все 9000+ "Заказать"), и без этого их клики попадают в статистику

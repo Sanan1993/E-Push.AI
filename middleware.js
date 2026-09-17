@@ -1,6 +1,6 @@
 import { next } from '@vercel/edge';
 
-const STATS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwCWuH3PKmOEc8ApiNBH4JXiIZjn_zYyZzdQE876BsMwyVR0iR1kHcmkwQsdmsoasqn/exec';
+const STATS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx7cmg-ylZ4HazmA6rpQY8STyBmD09i-AkenAVS46Qdo6FgKZlk0NAM3Fugh79-dmY0/exec';
 
 const BOT_PATTERNS = [
   /GPTBot/i, /ChatGPT-User/i, /OAI-SearchBot/i,
