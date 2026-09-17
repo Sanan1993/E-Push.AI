@@ -15,6 +15,14 @@ BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
 WHATSAPP_NUMBER = "994514553797"
 SITE_ROOT = "https://e-push-ai.vercel.app"
+# index.html дублируется и в корне, и в stores/makiyaj/ (это один и тот же
+# файл) — без canonical-тега Google видит дубликат контента и не знает, что
+# из этого индексировать, поэтому вообще не индексирует ни одну версию.
+STORE_CANONICAL_URL = f"{SITE_ROOT}/stores/{STORE_SLUG}/"
+STORE_DESCRIPTION = (
+    "Makiyaj Cosmetics — корейская косметика, уход и товары для макияжа "
+    "рядом с метро Azi Aslanov, Баку. Актуальные цены, заказ через WhatsApp."
+)
 
 
 def parse_price_azn(price_val):
@@ -143,6 +151,8 @@ def run():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="msvalidate.01" content="{BING_KEY}">
+    <meta name="description" content="{STORE_DESCRIPTION}">
+    <link rel="canonical" href="{STORE_CANONICAL_URL}">
     <title>{STORE_NAME} - Azi Aslanov, Baku</title>
     {json_ld_script}
     <style>
@@ -242,10 +252,11 @@ def run():
   with open("robots.txt", "w", encoding="utf-8", newline="\n") as f:
     f.write(robots_txt)
 
+  # "/" не включаем: это редирект на STORE_CANONICAL_URL (см. vercel.json), а не
+  # самостоятельная страница — держать редиректящий URL в sitemap сбивает Google.
   sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>{SITE_ROOT}/</loc></url>
-  <url><loc>{SITE_ROOT}/stores/makiyaj/index.html</loc></url>
+  <url><loc>{STORE_CANONICAL_URL}</loc></url>
   <url><loc>{SITE_ROOT}/stores/makiyaj/llms.txt</loc></url>
   <url><loc>{SITE_ROOT}/llms.txt</loc></url>
   <url><loc>{SITE_ROOT}/BingSiteAuth.xml</loc></url>

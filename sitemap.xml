@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://e-push-ai.vercel.app/</loc></url>
-  <url><loc>https://e-push-ai.vercel.app/stores/makiyaj/index.html</loc></url>
+  <url><loc>https://e-push-ai.vercel.app/stores/makiyaj/</loc></url>
   <url><loc>https://e-push-ai.vercel.app/stores/makiyaj/llms.txt</loc></url>
   <url><loc>https://e-push-ai.vercel.app/llms.txt</loc></url>
   <url><loc>https://e-push-ai.vercel.app/BingSiteAuth.xml</loc></url>
