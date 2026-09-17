@@ -13,6 +13,10 @@
  * 6. Скопируй URL Web app (заканчивается на /exec) и пришли его в чат.
  *
  * Логи появятся на новом листе "Stats" в этой же таблице.
+ *
+ * Обновление (IP-адрес): если "Stats" уже существует со старыми колонками —
+ * добавь заголовок "IP" в ячейку I1 вручную один раз, дальше скрипт сам
+ * будет писать туда значения.
  */
 
 function doPost(e) {
@@ -28,6 +32,7 @@ function doPost(e) {
       data.country || '',
       data.city || '',
       data.referrer || '',
+      data.ip || '',
     ]);
     return ContentService.createTextOutput(JSON.stringify({ ok: true }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -46,7 +51,7 @@ function getStatsSheet_() {
   var sheet = ss.getSheetByName('Stats');
   if (!sheet) {
     sheet = ss.insertSheet('Stats');
-    sheet.appendRow(['Timestamp', 'Type', 'Path', 'Product', 'User-Agent', 'Country', 'City', 'Referrer']);
+    sheet.appendRow(['Timestamp', 'Type', 'Path', 'Product', 'User-Agent', 'Country', 'City', 'Referrer', 'IP']);
     sheet.setFrozenRows(1);
   }
   return sheet;

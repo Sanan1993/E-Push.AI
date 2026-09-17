@@ -51,6 +51,7 @@ module.exports = async (req, res) => {
         path: '/go',
         product: t || '',
         ua,
+        ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim(),
         referrer: req.headers['referer'] || '',
         country: req.headers['x-vercel-ip-country'] || '',
         city: req.headers['x-vercel-ip-city'] || '',

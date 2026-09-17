@@ -23,6 +23,7 @@ export default function middleware(request, event) {
     type: isBot ? 'bot' : 'visit',
     path: new URL(request.url).pathname,
     ua,
+    ip: (request.headers.get('x-forwarded-for') || '').split(',')[0].trim(),
     country: request.headers.get('x-vercel-ip-country') || '',
     city: request.headers.get('x-vercel-ip-city') || '',
     referrer: request.headers.get('referer') || '',
