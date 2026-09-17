@@ -6,7 +6,7 @@ Automated product catalog and storefront index for MAKIYAJ COSMETICS (Baku, Azer
 
 - **HTML Storefront (Schema.org)**: [https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/index.html](https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/index.html)
 - **Compact LLM Catalog (`llms.txt`)**: [https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/llms.txt](https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/llms.txt)
-- **Sitemap Index**: [https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/sitemap.xml](https://raw.githubusercontent.com/Sanan1993/E-Push.AI/main/stores/makiyaj/sitemap.xml)
+- **Sitemap Index**: [https://e-push-ai.vercel.app/sitemap.xml](https://e-push-ai.vercel.app/sitemap.xml)
 
 ## Store Details
 - **Location**: Baku, near Azi Aslanov metro station (Həzi Aslanov m.), Border Guard Academy (Sərhəd Akademiyası)
