@@ -6,7 +6,7 @@ const BOT_PATTERNS = [
   /GPTBot/i, /ChatGPT-User/i, /OAI-SearchBot/i,
   /PerplexityBot/i, /Perplexity-User/i,
   /ClaudeBot/i, /Claude-User/i, /anthropic-ai/i,
-  /Google-Extended/i, /Googlebot/i,
+  /Google-Extended/i, /Googlebot/i, /GoogleOther/i,
   /Bingbot/i, /CCBot/i, /Applebot/i, /YandexBot/i,
   /facebookexternalhit/i, /DuckDuckBot/i, /Bytespider/i, /cohere-ai/i,
 ];
