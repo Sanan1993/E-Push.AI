@@ -14,6 +14,18 @@ const BOT_PATTERNS = [
   /facebookexternalhit/i, /DuckDuckBot/i, /Bytespider/i, /cohere-ai/i,
 ];
 
+// См. middleware.js — тот же намеренно узкий, растущий список.
+const DATACENTER_IP_PREFIXES = [
+  '34.', '35.', '52.', '54.', // AWS EC2 / Google Cloud compute
+  '138.68.', '159.65.', '164.90.', '167.71.', '178.62.', // DigitalOcean
+  '5.9.', '78.46.', '88.99.', '94.130.', '116.202.', '135.181.', // Hetzner
+  '51.68.', '54.36.', '137.74.', '141.94.', '145.239.', '151.80.', // OVH
+];
+
+function isDatacenterIp(ip) {
+  return DATACENTER_IP_PREFIXES.some((prefix) => ip.startsWith(prefix));
+}
+
 module.exports = async (req, res) => {
   const { to, t } = req.query;
   const ua = req.headers['user-agent'] || '';
@@ -45,17 +57,27 @@ module.exports = async (req, res) => {
   // См. middleware.js: настоящий переход по ссылке несёт Sec-Fetch-Mode: navigate,
   // простые скрипты — как правило, нет.
   const looksHuman = req.headers['sec-fetch-mode'] === 'navigate';
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+
+  let clickType;
+  if (looksHuman && isDatacenterIp(ip)) {
+    clickType = 'click-datacenter';
+  } else if (looksHuman) {
+    clickType = 'click-real';
+  } else {
+    clickType = 'click-unclear';
+  }
 
   try {
     await fetch(STATS_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: looksHuman ? 'click-real' : 'click-unclear',
+        type: clickType,
         path: '/go',
         product: t || '',
         ua,
-        ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim(),
+        ip,
         referrer: req.headers['referer'] || '',
         country: req.headers['x-vercel-ip-country'] || '',
         city: req.headers['x-vercel-ip-city'] || '',
