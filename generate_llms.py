@@ -1,3 +1,5 @@
+import csv
+import html
 import io
 import json
 import os
@@ -39,6 +41,127 @@ def parse_price_azn(price_val):
     return float(numeric)
   except ValueError:
     return None
+
+
+# Справочник штрихкод -> бренд/категория/объём. Собирается локально скриптом
+# tools/build_name_map.py из каталога маркетплейса и хранится в репозитории
+# маленьким файлом: GitHub Action не видит гигабайтную базу на компьютере.
+NAME_MAP_FILE = "data/name_map.csv"
+
+_SIZE_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*(мл|ml|гр|gr|г|g|кг|kg|л|l)\b", re.IGNORECASE)
+_SIZE_UNITS = {
+    "мл": "мл", "ml": "мл", "гр": "г", "gr": "г", "г": "г", "g": "г",
+    "кг": "кг", "kg": "кг", "л": "л", "l": "л",
+}
+
+
+def normalize_barcode(value):
+  """Ключ для сопоставления: только цифры, до 13 знаков дополняем нулями слева
+  (UPC-12 и EAN-13 с ведущим нулём — один и тот же товар)."""
+  digits = re.sub(r"\D", "", str(value or ""))
+  return digits.zfill(13) if digits and len(digits) <= 13 else digits
+
+
+def is_valid_gtin(digits):
+  """Контрольная цифра GTIN-8/12/13/14 (в базах встречаются битые штрихкоды)."""
+  if not digits.isdigit() or len(digits) not in (8, 12, 13, 14):
+    return False
+  total = sum(
+      int(d) * (3 if i % 2 == 0 else 1)
+      for i, d in enumerate(reversed(digits[:-1]))
+  )
+  return (10 - total % 10) % 10 == int(digits[-1])
+
+
+def extract_size(text):
+  m = _SIZE_RE.search(text or "")
+  if not m:
+    return None
+  return f"{m.group(1)} {_SIZE_UNITS[m.group(2).lower()]}"
+
+
+def load_name_map():
+  if not os.path.exists(NAME_MAP_FILE):
+    return {}
+  with open(NAME_MAP_FILE, encoding="utf-8", newline="") as f:
+    return {row["barcode"]: row for row in csv.DictReader(f)}
+
+
+def _letters_only(text):
+  return re.sub(r"[^a-z0-9а-яё]", "", text.lower())
+
+
+# Маркетплейс пишет в brand и служебные значения — это не бренды.
+_NOT_A_BRAND = {"no brand", "nobrand", "noname", "no name", "без бренда", "нет бренда", "1"}
+
+
+def clean_brand(brand):
+  brand = (brand or "").strip()
+  return "" if brand.lower() in _NOT_A_BRAND else brand
+
+
+def _strip_brand(tokens, brand):
+  """Убирает бренд из начала названия (в т.ч. неполный: LOREAL -> L'Oreal Paris)."""
+  target = _letters_only(brand)
+  if not target:
+    return tokens, False
+  acc, consumed = "", 0
+  for token in tokens:
+    part = _letters_only(token)
+    if not part or not target.startswith(acc + part):
+      break
+    acc += part
+    consumed += 1
+    if acc == target:
+      break
+  if consumed and len(acc) >= 3:
+    return tokens[consumed:], True
+  return tokens, False
+
+
+def _smart_case(token):
+  if token != token.upper() or re.search(r"\d", token):
+    return token  # уже смешанный регистр или код (402, SPF50, PT110-069)
+  letters = re.sub(r"[^A-Za-zА-Яа-яЁё]", "", token)
+  if not letters:
+    return token
+  if re.search(r"[А-Яа-яЁё]", letters):
+    return token.lower()
+  if len(letters) <= 3:
+    return token  # BB, CC, SPF, UV
+  return token[:1] + token[1:].lower()
+
+
+def build_display_title(raw_title, info):
+  """Название для витрины и ИИ: бренд + модель, объём, тип товара.
+
+  Только факты из справочника (бренд, категория, объём) — строку названия
+  маркетплейса не копируем. Без справочника — просто чистка регистра/объёма.
+  """
+  info = info or {}
+  brand = clean_brand(info.get("brand"))
+  category = (info.get("category") or "").split(",")[0].strip()
+  size = extract_size(raw_title) or (info.get("size") or "").strip() or None
+
+  cleaned = raw_title.replace("¶", " ")
+  tokens = _SIZE_RE.sub(" ", cleaned).split()
+
+  prefix_brand = False
+  if brand:
+    tokens, stripped = _strip_brand(tokens, brand)
+    # бренд нигде в названии не упомянут — добавим его в начало
+    prefix_brand = stripped or _letters_only(brand) not in _letters_only(cleaned)
+
+  model = " ".join(_smart_case(t) for t in tokens).strip(" ,.-/")
+  parts = [brand] if brand and prefix_brand else []
+  if model:
+    parts.append(model)
+  title = " ".join(parts) or raw_title.strip()
+  if size:
+    title += f", {size}"
+  if category:
+    title += f" — {category[:1].lower()}{category[1:]}"
+  return title
 
 
 def build_html_page(page_cards, page_offers, page_num, total_pages):
@@ -140,6 +263,8 @@ def run():
     print("Ошибка: Таблица пустая!")
     sys.exit(1)
 
+  name_map = load_name_map()
+  skipped_no_stock = 0
   items = []
   for idx, r in df.iterrows():
     if len(r) < 4:
@@ -168,11 +293,34 @@ def run():
     if price_val != "По запросу" and "azn" not in price_val.lower():
       price_val = f"{price_val} AZN"
 
-    items.append({"title": raw_title, "price": price_val})
+    # Остаток (колонка 5): 0 и отрицательные значения — складские артефакты,
+    # такой товар нельзя публиковать как "в наличии".
+    if len(r) > 4:
+      try:
+        if float(str(r[4]).replace(",", ".")) <= 0:
+          skipped_no_stock += 1
+          continue
+      except ValueError:
+        pass
+
+    digits = re.sub(r"\D", "", str(r[2])) if len(r) > 2 else ""
+    items.append({
+        "title": raw_title,
+        "price": price_val,
+        "gtin": digits if is_valid_gtin(digits) else "",
+        "display": build_display_title(
+            raw_title, name_map.get(normalize_barcode(digits))
+        ),
+        "info": name_map.get(normalize_barcode(digits)) or {},
+    })
 
   if len(items) == 0:
     print("Внимание: Ни один товар не найден.")
     sys.exit(1)
+  print(
+      f"Товаров: {len(items)} | пропущено без остатка: {skipped_no_stock} |"
+      f" названий из справочника: {sum(1 for i in items if i['info'])}"
+  )
 
   cards = []
   llms_all_lines = []
@@ -190,16 +338,23 @@ def run():
 
     cards.append(f"""
         <div class="card">
-            <div class="title">{i['title']}</div>
+            <div class="title">{html.escape(i['display'])}</div>
             <div class="price">{i['price']}</div>
             <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
         </div>""")
 
-    llms_all_lines.append(f"- {i['title']} | {i['price']} | Заказать: {wa_link}")
+    llms_all_lines.append(f"- {i['display']} | {i['price']} | Заказать: {wa_link}")
 
+    product = {"@type": "Product", "name": i["display"]}
+    if i["gtin"]:
+      product["gtin"] = i["gtin"]
+    if clean_brand(i["info"].get("brand")):
+      product["brand"] = {"@type": "Brand", "name": clean_brand(i["info"]["brand"])}
+    if i["info"].get("category"):
+      product["category"] = i["info"]["category"]
     offer = {
         "@type": "Offer",
-        "itemOffered": {"@type": "Product", "name": i["title"]},
+        "itemOffered": product,
         "priceCurrency": "AZN",
         "availability": "https://schema.org/InStock",
         "url": wa_link,
