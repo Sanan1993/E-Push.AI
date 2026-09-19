@@ -28,9 +28,21 @@ jobs:
         run: python generate_llms.py
 
       - name: Commit and Push Changes
+        id: commit
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
-          git commit -m "Auto-update catalog [skip ci]" || exit 0
-          git push
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Auto-update catalog [skip ci]"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Notify IndexNow about changed pages
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          sleep 60  # дать Vercel выкатить свежие файлы до пинга
+          python indexnow_ping.py

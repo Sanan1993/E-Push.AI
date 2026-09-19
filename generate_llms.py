@@ -18,6 +18,8 @@ BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
 WHATSAPP_NUMBER = "994514553797"
 SITE_ROOT = "https://e-push-ai.vercel.app"
+# IndexNow: по протоколу ключ публичный (лежит файлом на сайте), не секрет.
+INDEXNOW_KEY = "8b2effb1df567e183bb7dc114cefcb35"
 # index.html дублируется и в корне, и в stores/makiyaj/ (это один и тот же
 # файл) — без canonical-тега Google видит дубликат контента и не знает, что
 # из этого индексировать, поэтому вообще не индексирует ни одну версию.
@@ -243,6 +245,10 @@ def run():
   google_html_content = f"google-site-verification: {GOOGLE_VERIFY_FILE}"
   with open(GOOGLE_VERIFY_FILE, "w", encoding="utf-8", newline="\n") as f:
     f.write(google_html_content)
+
+  # 2b. Файл-ключ IndexNow: подтверждает поисковикам, что сайт наш
+  with open(f"{INDEXNOW_KEY}.txt", "w", encoding="utf-8", newline="\n") as f:
+    f.write(INDEXNOW_KEY)
 
   # 3. Создаем XML-файл верификации BingSiteAuth.xml
   bing_xml = f"""<?xml version="1.0"?>
