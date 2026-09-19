@@ -1,6 +1,6 @@
 # Makiyaj Cosmetics (Azi Aslanov) - Part 25
 Location: Azi Aslanov metro, Baku
-INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
+Format: '- <product> | <price in AZN> | Заказать: <WhatsApp order link>'.
 Total in part: 200
 
 - EVELINE OH MY LIPS LIQUID MATT LIPSTICK 07 | 11,7 AZN | Заказать: https://e-push-ai.vercel.app/api/go?to=https%3A%2F%2Fwa.me%2F994514553797%3Ftext%3DSalam%2521%2520Makiyaj%2520almaq%2520ist%25C9%2599yir%25C9%2599m%253A%2520EVELINE%2520OH%2520MY%2520LIPS%2520LIQUID%2520MATT%2520LIPSTICK%252007&t=EVELINE%20OH%20MY%20LIPS%20LIQUID%20MATT%20LIPSTICK%2007

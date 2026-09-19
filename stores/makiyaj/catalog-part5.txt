@@ -1,6 +1,6 @@
 # Makiyaj Cosmetics (Azi Aslanov) - Part 5
 Location: Azi Aslanov metro, Baku
-INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
+Format: '- <product> | <price in AZN> | Заказать: <WhatsApp order link>'.
 Total in part: 200
 
 - CLAIRE CLEANSING FOAM MOUSSE 165 ML | 9,3 AZN | Заказать: https://e-push-ai.vercel.app/api/go?to=https%3A%2F%2Fwa.me%2F994514553797%3Ftext%3DSalam%2521%2520Makiyaj%2520almaq%2520ist%25C9%2599yir%25C9%2599m%253A%2520CLAIRE%2520CLEANSING%2520FOAM%2520MOUSSE%2520165%2520ML&t=CLAIRE%20CLEANSING%20FOAM%20MOUSSE%20165%20ML

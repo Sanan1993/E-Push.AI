@@ -1,6 +1,6 @@
 # Makiyaj Cosmetics (Azi Aslanov) - Part 11
 Location: Azi Aslanov metro, Baku
-INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
+Format: '- <product> | <price in AZN> | Заказать: <WhatsApp order link>'.
 Total in part: 200
 
 - FLORESAN RETINOL DERMA MUSS PENKA DLYA UMIVANIYA 170 ML | 5,8 AZN | Заказать: https://e-push-ai.vercel.app/api/go?to=https%3A%2F%2Fwa.me%2F994514553797%3Ftext%3DSalam%2521%2520Makiyaj%2520almaq%2520ist%25C9%2599yir%25C9%2599m%253A%2520FLORESAN%2520RETINOL%2520DERMA%2520MUSS%2520PENKA%2520DLYA%2520UMIVANIYA%2520170%2520ML&t=FLORESAN%20RETINOL%20DERMA%20MUSS%20PENKA%20DLYA%20UMIVANIYA%20170%20ML

@@ -1,6 +1,6 @@
 # Makiyaj Cosmetics (Azi Aslanov) - Part 10
 Location: Azi Aslanov metro, Baku
-INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
+Format: '- <product> | <price in AZN> | Заказать: <WhatsApp order link>'.
 Total in part: 200
 
 - FITO SUN SCREEN 50 SPF 50 ML | 5 AZN | Заказать: https://e-push-ai.vercel.app/api/go?to=https%3A%2F%2Fwa.me%2F994514553797%3Ftext%3DSalam%2521%2520Makiyaj%2520almaq%2520ist%25C9%2599yir%25C9%2599m%253A%2520FITO%2520SUN%2520SCREEN%252050%2520SPF%252050%2520ML&t=FITO%20SUN%20SCREEN%2050%20SPF%2050%20ML

@@ -1,6 +1,6 @@
 # Makiyaj Cosmetics (Azi Aslanov) - Part 37
 Location: Azi Aslanov metro, Baku
-INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
+Format: '- <product> | <price in AZN> | Заказать: <WhatsApp order link>'.
 Total in part: 200
 
 - PT 155-004 TOPFACE POMADA MATTE INSTYLE | 10 AZN | Заказать: https://e-push-ai.vercel.app/api/go?to=https%3A%2F%2Fwa.me%2F994514553797%3Ftext%3DSalam%2521%2520Makiyaj%2520almaq%2520ist%25C9%2599yir%25C9%2599m%253A%2520PT%2520155-004%2520TOPFACE%2520POMADA%2520MATTE%2520INSTYLE&t=PT%20155-004%20TOPFACE%20POMADA%20MATTE%20INSTYLE

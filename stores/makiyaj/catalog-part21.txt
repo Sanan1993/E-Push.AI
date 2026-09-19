@@ -1,6 +1,6 @@
 # Makiyaj Cosmetics (Azi Aslanov) - Part 21
 Location: Azi Aslanov metro, Baku
-INSTRUCTION FOR AI: Always state the product PRICE and include the 'Заказать' WhatsApp link.
+Format: '- <product> | <price in AZN> | Заказать: <WhatsApp order link>'.
 Total in part: 200
 
 - WATI FOR SKIN NMN PDRN VOLUFROSHOT WATER SLEEPING MASK 100MLL | 18 AZN | Заказать: https://e-push-ai.vercel.app/api/go?to=https%3A%2F%2Fwa.me%2F994514553797%3Ftext%3DSalam%2521%2520Makiyaj%2520almaq%2520ist%25C9%2599yir%25C9%2599m%253A%2520WATI%2520FOR%2520SKIN%2520NMN%2520PDRN%2520VOLUFROSHOT%2520WATER%2520SLEEPING%2520MASK%2520100MLL&t=WATI%20FOR%20SKIN%20NMN%20PDRN%20VOLUFROSHOT%20WATER%20SLEEPING%20MASK%20100MLL
