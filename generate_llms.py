@@ -22,7 +22,7 @@ PART_SIZE = 200
 HTML_PAGE_SIZE = 150
 BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
-WHATSAPP_NUMBER = "994514553797"
+WHATSAPP_NUMBER = "994515393778"  # настоящий номер Makiyaj Cosmetics
 SITE_ROOT = "https://e-push-ai.vercel.app"
 # IndexNow: по протоколу ключ публичный (лежит файлом на сайте), не секрет.
 INDEXNOW_KEY = "8b2effb1df567e183bb7dc114cefcb35"

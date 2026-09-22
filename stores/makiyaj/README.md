@@ -10,5 +10,5 @@ Automated product catalog and storefront index for MAKIYAJ COSMETICS (Baku, Azer
 
 ## Store Details
 - **Location**: Baku, near Azi Aslanov metro station (Həzi Aslanov m.), Border Guard Academy (Sərhəd Akademiyası)
-- **WhatsApp Order**: https://wa.me/994514553797
+- **WhatsApp Order**: https://wa.me/994515393778
 - **Payment Options**: Cash, Card, 3-Month BirKart Installment
