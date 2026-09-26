@@ -418,6 +418,7 @@ def run():
   name_map = load_name_map()
   known_brands = build_known_brands(name_map)
   skipped_no_stock = 0
+  skipped_bad_price = 0
   mapped_count = 0
   items = []
   for idx, r in df.iterrows():
@@ -447,10 +448,12 @@ def run():
     if price_val != "По запросу" and "azn" not in price_val.lower():
       price_val = f"{price_val} AZN"
     # В таблице партнёра встречаются цены-заглушки (0,01 AZN при остатке 34 шт.).
-    # Ложную цену не публикуем — лучше честное "по запросу".
+    # Ложную цену не публикуем, товар целиком не выводим, пока партнёр не
+    # исправит цену в таблице.
     price_check = parse_price_azn(price_val)
     if price_check is not None and price_check < MIN_SANE_PRICE_AZN:
-      price_val = "По запросу"
+      skipped_bad_price += 1
+      continue
 
     # Остаток (колонка 5): 0 и отрицательные значения — складские артефакты,
     # такой товар нельзя публиковать как "в наличии".
@@ -486,6 +489,7 @@ def run():
     sys.exit(1)
   print(
       f"Товаров: {len(items)} | пропущено без остатка: {skipped_no_stock} |"
+      f" с ценой-заглушкой: {skipped_bad_price} |"
       f" названий из справочника: {mapped_count}"
   )
 
