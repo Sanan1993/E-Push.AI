@@ -35,11 +35,15 @@ def changed_files():
 
 
 def file_to_url(path):
-  if path == f"{STORE_DIR}/index.html":
-    return STORE_CANONICAL_URL
-  m = re.fullmatch(rf"{re.escape(STORE_DIR)}/page-(\d+)\.html", path)
-  if m:
-    return f"{SITE_ROOT}/{STORE_DIR}/page-{m.group(1)}.html"
+  # Любая HTML-страница витрины: <dir>/index.html -> адрес папки со слэшем,
+  # остальные (page-N.html) -> адрес файла.
+  if path.startswith(f"{STORE_DIR}/") and path.endswith(".html"):
+    rel = path[len(STORE_DIR) + 1 :]
+    if rel == "index.html":
+      return STORE_CANONICAL_URL
+    if rel.endswith("/index.html"):
+      return f"{SITE_ROOT}/{STORE_DIR}/{rel[: -len('index.html')]}"
+    return f"{SITE_ROOT}/{path}"
   if path == "llms.txt":
     return f"{SITE_ROOT}/llms.txt"
   if path == f"{STORE_DIR}/llms.txt":

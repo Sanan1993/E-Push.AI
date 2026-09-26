@@ -1,9 +1,11 @@
+import collections
 import csv
 import html
 import io
 import json
 import os
 import re
+import shutil
 import sys
 import urllib.parse
 import urllib.request
@@ -13,13 +15,6 @@ SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/14TseUjX-y0sn3fg2ovYtDQw
 STORE_NAME = "Makiyaj Cosmetics"
 STORE_SLUG = "makiyaj"
 PART_SIZE = 200
-# Одна HTML-страница на все 9000+ товаров весила ~9 МБ — Bing явно пометил
-# это как проблему. Режем витрину на страницы по HTML_PAGE_SIZE товаров.
-# Было 300: ChatGPT сослался на "не смог прочитать страницу" по прямой
-# ссылке на store, хотя сервер отдавал её быстро и полностью — возможный
-# (не подтверждённый) фактор: инструмент браузинга обрезает длинные страницы.
-# Уменьшаем размер, чтобы снизить такой риск, гарантии это не даёт.
-HTML_PAGE_SIZE = 150
 BING_KEY = "CAFD35CF8A7F03B86A676AAEEA9F724F"
 GOOGLE_VERIFY_FILE = "googled45868da9ece60dc.html"
 WHATSAPP_NUMBER = "994515393778"  # настоящий номер Makiyaj Cosmetics
@@ -30,6 +25,11 @@ INDEXNOW_KEY = "8b2effb1df567e183bb7dc114cefcb35"
 # файл) — без canonical-тега Google видит дубликат контента и не знает, что
 # из этого индексировать, поэтому вообще не индексирует ни одну версию.
 STORE_CANONICAL_URL = f"{SITE_ROOT}/stores/{STORE_SLUG}/"
+STORE_PHONE_E164 = f"+{WHATSAPP_NUMBER}"
+STORE_PHONE_DISPLAY = (
+    f"+{WHATSAPP_NUMBER[:3]} {WHATSAPP_NUMBER[3:5]} {WHATSAPP_NUMBER[5:8]}"
+    f" {WHATSAPP_NUMBER[8:10]} {WHATSAPP_NUMBER[10:]}"
+)
 STORE_DESCRIPTION = (
     "Makiyaj Cosmetics — корейская косметика, уход и товары для макияжа "
     "рядом с метро Azi Aslanov, Баку. Актуальные цены, заказ через WhatsApp."
@@ -133,7 +133,8 @@ def _smart_case(token):
     return token.lower()
   if len(letters) <= 3:
     return token  # BB, CC, SPF, UV
-  return token[:1] + token[1:].lower()
+  # lower() у азербайджанской "İ" оставляет отдельный значок-точку U+0307
+  return token[:1] + token[1:].lower().replace("̇", "")
 
 
 def build_display_title(raw_title, info):
@@ -168,80 +169,227 @@ def build_display_title(raw_title, info):
   return title
 
 
-def build_html_page(page_cards, page_offers, page_num, total_pages):
-  """Одна страница витрины: свой canonical и свой JSON-LD только на её товары
-  (иначе разбиение теряет смысл — весь Schema.org дублировался бы на каждой
-  странице)."""
-  if page_num == 1:
-    canonical_url = STORE_CANONICAL_URL
-  else:
-    canonical_url = f"{SITE_ROOT}/stores/{STORE_SLUG}/page-{page_num}.html"
+_RU_LAT = {
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e",
+    "ж": "zh", "з": "z", "и": "i", "й": "y", "к": "k", "л": "l", "м": "m",
+    "н": "n", "о": "o", "п": "p", "р": "r", "с": "s", "т": "t", "у": "u",
+    "ф": "f", "х": "kh", "ц": "ts", "ч": "ch", "ш": "sh", "щ": "sch",
+    "ъ": "", "ы": "y", "ь": "", "э": "e", "ю": "yu", "я": "ya",
+    "ə": "e", "ı": "i", "ö": "o", "ü": "u", "ş": "sh", "ç": "ch", "ğ": "g",
+}
 
-  json_ld = {
+# Отдельная страница у категории/бренда — только от этого числа товаров
+# (мелкие уходят в общую страницу "Прочие товары", иначе получаются тонкие
+# страницы, которые Google не любит индексировать).
+HUB_MIN_ITEMS = 10
+HUB_PAGE_SIZE = 100
+MIN_SANE_PRICE_AZN = 0.5
+
+PAGE_CSS = """
+body { font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+h1 { text-align: center; color: #111; margin: 10px 0 8px; font-size: 24px; }
+h2 { max-width: 1200px; margin: 28px auto 10px; font-size: 18px; color: #222; }
+.crumbs { max-width: 1200px; margin: 0 auto; font-size: 13px; color: #666; }
+.crumbs a { color: #0d7a5f; text-decoration: none; }
+.intro { max-width: 900px; margin: 0 auto 22px; text-align: center; color: #555; font-size: 14px; line-height: 1.5; }
+.intro a { color: #0d7a5f; }
+.hub-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.hub-link { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 9px 12px; color: #222; text-decoration: none; font-size: 14px; display: flex; justify-content: space-between; gap: 8px; }
+.hub-link:hover { border-color: #0d7a5f; }
+.hub-link span { color: #888; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
+.card { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.title { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #222; line-height: 1.3; }
+.price { font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 12px; }
+.btn { text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 13px; transition: background 0.2s; }
+.btn:hover { background: #1eb857; }
+.pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; margin: 30px 0 10px; font-size: 14px; }
+.page-link { color: #0d7a5f; text-decoration: none; font-weight: 600; }
+.page-link:hover { text-decoration: underline; }
+.page-current { font-weight: 700; color: #111; }
+footer { max-width: 1200px; margin: 40px auto 0; padding-top: 16px; border-top: 1px solid #ddd; text-align: center; font-size: 13px; color: #666; }
+footer a { color: #0d7a5f; }
+"""
+
+
+def slugify(text):
+  latin = "".join(_RU_LAT.get(ch, ch) for ch in text.lower())
+  return re.sub(r"[^a-z0-9]+", "-", latin).strip("-") or "x"
+
+
+def unique_slug(base, used):
+  slug, n = base, 2
+  while slug in used:
+    slug = f"{base}-{n}"
+    n += 1
+  used.add(slug)
+  return slug
+
+
+def build_known_brands(name_map):
+  """Ключ (буквы без пробелов) -> самое частое написание бренда из справочника."""
+  counts = collections.Counter(
+      clean_brand(row.get("brand")) for row in name_map.values()
+  )
+  known = {}
+  for brand, _ in counts.most_common():
+    key = _letters_only(brand)
+    if brand and len(key) >= 4 and key not in known:
+      known[key] = brand
+  return known
+
+
+def infer_brand(raw_title, known_brands):
+  """Бренд товара без записи в справочнике: в складских названиях он идёт
+  первым, ищем точное совпадение с уже известными брендами по первым словам."""
+  acc, found = "", None
+  for token in raw_title.replace("¶", " ").split()[:4]:
+    acc += _letters_only(token)
+    if acc in known_brands:
+      found = known_brands[acc]
+  return found
+
+
+def _fmt_price(value):
+  return f"{value:g}".replace(".", ",")
+
+
+def _shorten(text, limit=158):
+  return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
+
+def _json_script(data):
+  return (
+      '<script type="application/ld+json">'
+      + json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+      + "</script>"
+  )
+
+
+def pagination_html(base_path, page_num, total_pages):
+  if total_pages <= 1:
+    return ""
+
+  def url(n):
+    return base_path if n == 1 else f"{base_path}page-{n}.html"
+
+  shown = sorted(
+      {1, total_pages}
+      | {n for n in range(page_num - 2, page_num + 3) if 1 <= n <= total_pages}
+  )
+  parts = []
+  if page_num > 1:
+    parts.append(f'<a href="{url(page_num - 1)}" class="page-link">&larr; Назад</a>')
+  previous = 0
+  for n in shown:
+    if n - previous > 1:
+      parts.append("<span>…</span>")
+    if n == page_num:
+      parts.append(f'<span class="page-current">{n}</span>')
+    else:
+      parts.append(f'<a href="{url(n)}" class="page-link">{n}</a>')
+    previous = n
+  if page_num < total_pages:
+    parts.append(f'<a href="{url(page_num + 1)}" class="page-link">Вперёд &rarr;</a>')
+  return f'<div class="pagination">{"".join(parts)}</div>'
+
+
+def render_page(title, description, canonical, h1, intro_html, main_html,
+                breadcrumbs, offers=None, pagination=""):
+  store_ld = {
       "@context": "https://schema.org",
       "@type": "Store",
       "name": STORE_NAME,
+      "telephone": STORE_PHONE_E164,
       "address": {
           "@type": "PostalAddress",
           "addressLocality": "Baku",
           "addressCountry": "AZ",
       },
-      "makesOffer": page_offers,
   }
-  json_ld_script = (
-      '<script type="application/ld+json">'
-      + json.dumps(json_ld, ensure_ascii=False).replace("</", "<\\/")
-      + "</script>"
+  if offers:
+    store_ld["makesOffer"] = offers
+  crumb_ld = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+          {"@type": "ListItem", "position": n, "name": name, "item": url}
+          for n, (name, url) in enumerate(breadcrumbs, start=1)
+      ],
+  }
+  crumbs = " › ".join(
+      f'<a href="{url}">{html.escape(name)}</a>' for name, url in breadcrumbs[:-1]
   )
-
-  nav_links = []
-  if page_num > 1:
-    prev_href = STORE_CANONICAL_URL if page_num == 2 else f"page-{page_num - 1}.html"
-    nav_links.append(f'<a href="{prev_href}" class="page-link">&larr; Əvvəlki</a>')
-  if page_num < total_pages:
-    nav_links.append(
-        f'<a href="page-{page_num + 1}.html" class="page-link">Növbəti &rarr;</a>'
-    )
-  pagination_html = (
-      f'<div class="pagination">{"".join(nav_links)}'
-      f'<span class="page-info">Səhifə {page_num}/{total_pages}</span></div>'
-  )
-
-  title_suffix = "" if page_num == 1 else f" - Səhifə {page_num}"
+  crumbs += (" › " if crumbs else "") + f"<span>{html.escape(breadcrumbs[-1][0])}</span>"
 
   return f"""<!DOCTYPE html>
-<html lang="az">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="msvalidate.01" content="{BING_KEY}">
-    <meta name="description" content="{STORE_DESCRIPTION}">
-    <link rel="canonical" href="{canonical_url}">
-    <title>{STORE_NAME} - Azi Aslanov, Baku{title_suffix}</title>
-    {json_ld_script}
-    <style>
-        body {{ font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }}
-        h1 {{ text-align: center; color: #111; margin-bottom: 5px; }}
-        p.subtitle {{ text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }}
-        .card {{ background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }}
-        .title {{ font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #222; line-height: 1.3; }}
-        .price {{ font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 12px; }}
-        .btn {{ text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 13px; transition: background 0.2s; }}
-        .btn:hover {{ background: #1eb857; }}
-        .pagination {{ display: flex; justify-content: center; align-items: center; gap: 20px; margin: 30px 0 10px; font-size: 14px; }}
-        .page-link {{ color: #0d7a5f; text-decoration: none; font-weight: 600; }}
-        .page-link:hover {{ text-decoration: underline; }}
-        .page-info {{ color: #666; }}
-    </style>
+    <title>{html.escape(title)}</title>
+    <meta name="description" content="{html.escape(description, quote=True)}">
+    <link rel="canonical" href="{canonical}">
+    {_json_script(store_ld)}
+    {_json_script(crumb_ld)}
+    <style>{PAGE_CSS}</style>
 </head>
 <body>
-    <h1>{STORE_NAME}</h1>
-    <p class="subtitle">Bakı, Həzi Aslanov metrosu yaxınlığı | Koreya kosmetikası və makiyaj malları</p>
-    <div class="grid">{"".join(page_cards)}</div>
-    {pagination_html}
+    <nav class="crumbs">{crumbs}</nav>
+    <h1>{html.escape(h1)}</h1>
+    <div class="intro">{intro_html}</div>
+    {main_html}
+    {pagination}
+    <footer>{html.escape(STORE_NAME)} · Баку, рядом с метро Ази Асланов · WhatsApp: <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> · <a href="/llms.txt">Каталог в текстовом виде</a></footer>
 </body>
 </html>"""
+
+
+def hub_texts(hub):
+  """Заголовок, H1, вводный текст и description: только факты из данных, чтобы
+  каждая страница получалась уникальной, а не шаблонной болванкой."""
+  group = hub["items"]
+  prices = [p for p in (parse_price_azn(i["price"]) for i in group) if p is not None]
+  price_txt = (
+      f"Цены от {_fmt_price(min(prices))} до {_fmt_price(max(prices))} AZN. "
+      if prices else ""
+  )
+  name = hub["name"]
+  if hub["kind"] == "kategoriya":
+    others = collections.Counter(i["brand"] for i in group if i["brand"]).most_common(3)
+    extra = f"Бренды: {', '.join(b for b, _ in others)}. " if others else ""
+    title = f"{name} — цены в Баку | {STORE_NAME}"
+    h1 = f"{name}: цены и наличие в Баку"
+  elif hub["kind"] == "brend":
+    others = collections.Counter(i["category"] for i in group if i["category"]).most_common(3)
+    extra = f"Категории: {', '.join(c for c, _ in others)}. " if others else ""
+    title = f"{name} — купить в Баку, цены | {STORE_NAME}"
+    h1 = f"{name}: цены и наличие в Баку"
+  else:
+    extra = "Товары, не вошедшие в отдельные категории и бренды. "
+    title = f"{name} | {STORE_NAME}"
+    h1 = f"{name}: цены и наличие в Баку"
+  plain = (
+      f"Товаров в наличии: {len(group)}. {price_txt}{extra}"
+      f"Магазин {STORE_NAME}, Баку, рядом с метро Ази Асланов. "
+      f"Заказ через WhatsApp: {STORE_PHONE_DISPLAY}."
+  )
+  intro_html = (
+      f"{html.escape(plain.rsplit(' Заказ через WhatsApp', 1)[0])} "
+      f'Цены и остатки обновляются каждые 6 часов. '
+      f'Заказ через WhatsApp: <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a>.'
+  )
+  return title, h1, intro_html, _shorten(plain)
+
+
+def hub_grid(heading, hubs):
+  links = "".join(
+      f'<a class="hub-link" href="{h["path"]}">{html.escape(h["name"])}'
+      f' <span>{len(h["items"])}</span></a>'
+      for h in hubs
+  )
+  return f"<section><h2>{heading}</h2><div class=\"hub-grid\">{links}</div></section>"
 
 
 def run():
@@ -268,7 +416,9 @@ def run():
     sys.exit(1)
 
   name_map = load_name_map()
+  known_brands = build_known_brands(name_map)
   skipped_no_stock = 0
+  mapped_count = 0
   items = []
   for idx, r in df.iterrows():
     if len(r) < 4:
@@ -296,6 +446,11 @@ def run():
     )
     if price_val != "По запросу" and "azn" not in price_val.lower():
       price_val = f"{price_val} AZN"
+    # В таблице партнёра встречаются цены-заглушки (0,01 AZN при остатке 34 шт.).
+    # Ложную цену не публикуем — лучше честное "по запросу".
+    price_check = parse_price_azn(price_val)
+    if price_check is not None and price_check < MIN_SANE_PRICE_AZN:
+      price_val = "По запросу"
 
     # Остаток (колонка 5): 0 и отрицательные значения — складские артефакты,
     # такой товар нельзя публиковать как "в наличии".
@@ -308,14 +463,22 @@ def run():
         pass
 
     digits = re.sub(r"\D", "", str(r[2])) if len(r) > 2 else ""
+    info = dict(name_map.get(normalize_barcode(digits)) or {})
+    if info:
+      mapped_count += 1
+    brand = clean_brand(info.get("brand"))
+    if not brand:
+      brand = infer_brand(raw_title, known_brands) or ""
+      if brand:
+        info["brand"] = brand
     items.append({
         "title": raw_title,
         "price": price_val,
         "gtin": digits if is_valid_gtin(digits) else "",
-        "display": build_display_title(
-            raw_title, name_map.get(normalize_barcode(digits))
-        ),
-        "info": name_map.get(normalize_barcode(digits)) or {},
+        "display": build_display_title(raw_title, info),
+        "info": info,
+        "brand": brand,
+        "category": (info.get("category") or "").split(",")[0].strip(),
     })
 
   if len(items) == 0:
@@ -323,14 +486,12 @@ def run():
     sys.exit(1)
   print(
       f"Товаров: {len(items)} | пропущено без остатка: {skipped_no_stock} |"
-      f" названий из справочника: {sum(1 for i in items if i['info'])}"
+      f" названий из справочника: {mapped_count}"
   )
 
-  cards = []
   llms_all_lines = []
-  offers = []
-
-  for i in items:
+  for n, i in enumerate(items):
+    i["idx"] = n
     wa_msg = urllib.parse.quote(f"Salam! Makiyaj almaq istəyirəm: {i['title']}")
     real_wa_link = f"https://wa.me/{WHATSAPP_NUMBER}?text={wa_msg}"
     # Отдаём ссылку на свой трекинг-редирект вместо прямой wa.me, чтобы считать
@@ -340,12 +501,12 @@ def run():
         f"&t={urllib.parse.quote(i['title'])}"
     )
 
-    cards.append(f"""
+    i["card"] = f"""
         <div class="card">
             <div class="title">{html.escape(i['display'])}</div>
             <div class="price">{i['price']}</div>
             <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
-        </div>""")
+        </div>"""
 
     llms_all_lines.append(f"- {i['display']} | {i['price']} | Заказать: {wa_link}")
 
@@ -366,39 +527,124 @@ def run():
     price_num = parse_price_azn(i["price"])
     if price_num is not None:
       offer["price"] = price_num
-    offers.append(offer)
+    i["offer"] = offer
 
   store_dir = f"stores/{STORE_SLUG}"
   os.makedirs(store_dir, exist_ok=True)
 
-  # 1. Разбиваем витрину на страницы по HTML_PAGE_SIZE товаров (была одна
-  # страница на ~9 МБ — Bing явно отметил это как проблему).
-  total_pages = max(1, (len(cards) + HTML_PAGE_SIZE - 1) // HTML_PAGE_SIZE)
-
-  # Подчищаем "лишние" страницы с прошлых запусков, если товаров стало меньше
-  # (иначе старые page-N.html останутся висеть с устаревшим содержимым).
+  # 1. Витрина: главная-хаб + страницы категорий и брендов. Раньше был плоский
+  # список из 60+ одинаковых страниц "по алфавиту" — Google складывал их в
+  # "обнаружена, не проиндексирована": ни одна не отвечала на конкретный запрос.
   for old_file in os.listdir(store_dir):
-    m = re.match(r"^page-(\d+)\.html$", old_file)
-    if m and int(m.group(1)) > total_pages:
-      os.remove(os.path.join(store_dir, old_file))
-  for page_num in range(1, total_pages + 1):
-    start = (page_num - 1) * HTML_PAGE_SIZE
-    end = start + HTML_PAGE_SIZE
-    page_html = build_html_page(
-        cards[start:end], offers[start:end], page_num, total_pages
-    )
-    if page_num == 1:
-      # Страница 1 — она же canonical-адрес витрины, дублируется и в корень,
-      # и в папку магазина (см. STORE_CANONICAL_URL выше).
-      with open("index.html", "w", encoding="utf-8", newline="\n") as f:
+    if re.fullmatch(r"page-\d+\.html", old_file):
+      os.remove(os.path.join(store_dir, old_file))  # старые плоские страницы
+  for sub in ("kategoriya", "brend", "prochee"):
+    shutil.rmtree(os.path.join(store_dir, sub), ignore_errors=True)
+
+  by_category = collections.defaultdict(list)
+  by_brand = collections.defaultdict(list)
+  for i in items:
+    if i["category"]:
+      by_category[i["category"]].append(i)
+    if i["brand"]:
+      by_brand[_letters_only(i["brand"])].append(i)
+
+  def make_hubs(groups, kind, name_of):
+    used, hubs = set(), []
+    for key, group in groups.items():
+      if len(group) < HUB_MIN_ITEMS:
+        continue
+      name = name_of(key, group)
+      slug = unique_slug(slugify(name), used)
+      hubs.append({
+          "kind": kind, "name": name, "slug": slug,
+          "items": sorted(group, key=lambda x: x["display"].lower()),
+          "path": f"/stores/{STORE_SLUG}/{kind}/{slug}/",
+      })
+    hubs.sort(key=lambda h: (-len(h["items"]), h["name"].lower()))
+    return hubs
+
+  category_hubs = make_hubs(by_category, "kategoriya", lambda key, group: key)
+  brand_hubs = make_hubs(
+      by_brand, "brend",
+      lambda key, group: collections.Counter(i["brand"] for i in group).most_common(1)[0][0],
+  )
+
+  covered = {i["idx"] for hub in category_hubs + brand_hubs for i in hub["items"]}
+  leftovers = [i for i in items if i["idx"] not in covered]
+  hubs = category_hubs + brand_hubs
+  if leftovers:
+    hubs.append({
+        "kind": "prochee", "name": "Прочие товары", "slug": "",
+        "items": sorted(leftovers, key=lambda x: x["display"].lower()),
+        "path": f"/stores/{STORE_SLUG}/prochee/",
+    })
+  print(
+      f"Категорий-страниц: {len(category_hubs)} | брендов-страниц: {len(brand_hubs)}"
+      f" | в 'Прочее': {len(leftovers)}"
+  )
+
+  sitemap_urls = [STORE_CANONICAL_URL]
+  home_crumb = (STORE_NAME, STORE_CANONICAL_URL)
+
+  for hub in hubs:
+    title, h1, intro_html, description = hub_texts(hub)
+    total_pages = max(1, (len(hub["items"]) + HUB_PAGE_SIZE - 1) // HUB_PAGE_SIZE)
+    hub_dir = os.path.join(store_dir, hub["kind"], hub["slug"]).rstrip("\\/")
+    os.makedirs(hub_dir, exist_ok=True)
+    for page_num in range(1, total_pages + 1):
+      chunk = hub["items"][(page_num - 1) * HUB_PAGE_SIZE : page_num * HUB_PAGE_SIZE]
+      if page_num == 1:
+        page_path, filename = hub["path"], "index.html"
+      else:
+        page_path, filename = f"{hub['path']}page-{page_num}.html", f"page-{page_num}.html"
+      canonical = SITE_ROOT + page_path
+      suffix = "" if page_num == 1 else f" — стр. {page_num}"
+      page_html = render_page(
+          title=title + suffix,
+          description=(
+              description if page_num == 1
+              else _shorten(f"Страница {page_num}. {description}")
+          ),
+          canonical=canonical,
+          h1=h1,
+          intro_html=intro_html,
+          main_html=f'<div class="grid">{"".join(i["card"] for i in chunk)}</div>',
+          breadcrumbs=[home_crumb, (hub["name"], SITE_ROOT + hub["path"])]
+          + ([(f"Страница {page_num}", canonical)] if page_num > 1 else []),
+          offers=[i["offer"] for i in chunk],
+          pagination=pagination_html(hub["path"], page_num, total_pages),
+      )
+      with open(os.path.join(hub_dir, filename), "w", encoding="utf-8", newline="\n") as f:
         f.write(page_html)
-      with open(f"{store_dir}/index.html", "w", encoding="utf-8", newline="\n") as f:
-        f.write(page_html)
-    else:
-      with open(
-          f"{store_dir}/page-{page_num}.html", "w", encoding="utf-8", newline="\n"
-      ) as f:
-        f.write(page_html)
+      sitemap_urls.append(canonical)
+
+  home_intro = (
+      f"{html.escape(STORE_NAME)} — магазин косметики и товаров для красоты в Баку, "
+      "рядом с метро Ази Асланов (Хатаинский район). "
+      f"В наличии {len(items)} товаров: корейская косметика, макияж, уход за кожей "
+      "и волосами, парфюмерия. Цены в манатах (AZN), цены и остатки обновляются "
+      "каждые 6 часов. Заказ через WhatsApp: "
+      f'<a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a>.'
+  )
+  home_main = hub_grid("Категории", category_hubs) + hub_grid("Бренды", brand_hubs)
+  if leftovers:
+    home_main += hub_grid("Ещё", [h for h in hubs if h["kind"] == "prochee"])
+  home_html = render_page(
+      title=f"{STORE_NAME} — косметика в Баку, м. Ази Асланов: каталог и цены",
+      description=STORE_DESCRIPTION,
+      canonical=STORE_CANONICAL_URL,
+      h1=STORE_NAME,
+      intro_html=home_intro,
+      main_html=home_main,
+      breadcrumbs=[home_crumb],
+  )
+  # Главная — canonical-адрес витрины, дублируется и в корень, и в папку магазина
+  # (см. STORE_CANONICAL_URL выше).
+  with open("index.html", "w", encoding="utf-8", newline="\n") as f:
+    f.write(home_html)
+  with open(f"{store_dir}/index.html", "w", encoding="utf-8", newline="\n") as f:
+    f.write(home_html)
 
   # 2. Создаем файл верификации Google Search Console
   google_html_content = f"google-site-verification: {GOOGLE_VERIFY_FILE}"
@@ -473,20 +719,14 @@ def run():
   with open("robots.txt", "w", encoding="utf-8", newline="\n") as f:
     f.write(robots_txt)
 
-  # "/" не включаем: это редирект на STORE_CANONICAL_URL (см. vercel.json), а не
-  # самостоятельная страница — держать редиректящий URL в sitemap сбивает Google.
-  page_urls = "\n".join(
-      f"  <url><loc>{SITE_ROOT}/stores/{STORE_SLUG}/page-{n}.html</loc></url>"
-      for n in range(2, total_pages + 1)
-  )
+  # Только реальные страницы. "/" (редирект) и служебные файлы верификации
+  # в sitemap не нужны — они лишь плодили "обнаружена, не проиндексирована".
+  sitemap_lines = "\n".join(f"  <url><loc>{u}</loc></url>" for u in sitemap_urls)
   sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>{STORE_CANONICAL_URL}</loc></url>
-{page_urls}
+{sitemap_lines}
   <url><loc>{SITE_ROOT}/stores/makiyaj/llms.txt</loc></url>
   <url><loc>{SITE_ROOT}/llms.txt</loc></url>
-  <url><loc>{SITE_ROOT}/BingSiteAuth.xml</loc></url>
-  <url><loc>{SITE_ROOT}/{GOOGLE_VERIFY_FILE}</loc></url>
 </urlset>
 """
   with open("sitemap.xml", "w", encoding="utf-8", newline="\n") as f:

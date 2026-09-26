@@ -4,6 +4,11 @@
       "source": "/",
       "destination": "/stores/makiyaj/",
       "permanent": false
+    },
+    {
+      "source": "/stores/makiyaj/page-:n(\\d+).html",
+      "destination": "/stores/makiyaj/",
+      "permanent": true
     }
   ]
 }
