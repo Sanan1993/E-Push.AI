@@ -25,14 +25,17 @@ INDEXNOW_KEY = "8b2effb1df567e183bb7dc114cefcb35"
 # файл) — без canonical-тега Google видит дубликат контента и не знает, что
 # из этого индексировать, поэтому вообще не индексирует ни одну версию.
 STORE_CANONICAL_URL = f"{SITE_ROOT}/stores/{STORE_SLUG}/"
+# Подтверждён владельцем 2026-09-26 (ChatGPT цитировал ещё один адрес — №9 с
+# другим телефоном — он неверный).
+STORE_ADDRESS = "ул. Илгара Зульфигарова, 7K"
 STORE_PHONE_E164 = f"+{WHATSAPP_NUMBER}"
 STORE_PHONE_DISPLAY = (
     f"+{WHATSAPP_NUMBER[:3]} {WHATSAPP_NUMBER[3:5]} {WHATSAPP_NUMBER[5:8]}"
     f" {WHATSAPP_NUMBER[8:10]} {WHATSAPP_NUMBER[10:]}"
 )
 STORE_DESCRIPTION = (
-    "Makiyaj Cosmetics — корейская косметика, уход и товары для макияжа "
-    "рядом с метро Azi Aslanov, Баку. Актуальные цены, заказ через WhatsApp."
+    "Makiyaj Cosmetics — корейская косметика и товары для макияжа. Баку, "
+    f"{STORE_ADDRESS}, у метро Ази Асланов. Цены, заказ через WhatsApp."
 )
 
 
@@ -303,6 +306,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
       "telephone": STORE_PHONE_E164,
       "address": {
           "@type": "PostalAddress",
+          "streetAddress": STORE_ADDRESS,
           "addressLocality": "Baku",
           "addressCountry": "AZ",
       },
@@ -341,7 +345,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
     <div class="intro">{intro_html}</div>
     {main_html}
     {pagination}
-    <footer>{html.escape(STORE_NAME)} · Баку, рядом с метро Ази Асланов · WhatsApp: <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> · <a href="/llms.txt">Каталог в текстовом виде</a></footer>
+    <footer>{html.escape(STORE_NAME)} · Баку, {html.escape(STORE_ADDRESS)} (рядом с метро Ази Асланов) · WhatsApp: <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> · <a href="/llms.txt">Каталог в текстовом виде</a></footer>
 </body>
 </html>"""
 
@@ -624,8 +628,9 @@ def run():
       sitemap_urls.append(canonical)
 
   home_intro = (
-      f"{html.escape(STORE_NAME)} — магазин косметики и товаров для красоты в Баку, "
-      "рядом с метро Ази Асланов (Хатаинский район). "
+      f"{html.escape(STORE_NAME)} — магазин косметики и товаров для красоты в Баку. "
+      f"Адрес: {html.escape(STORE_ADDRESS)}, рядом с метро Ази Асланов "
+      "(Хатаинский район). "
       f"В наличии {len(items)} товаров: корейская косметика, макияж, уход за кожей "
       "и волосами, парфюмерия. Цены в манатах (AZN), цены и остатки обновляются "
       "каждые 6 часов. Заказ через WhatsApp: "
@@ -675,6 +680,8 @@ def run():
   ai_instruction = (
       f"# {STORE_NAME}\n"
       "Location: Baku, Azerbaijan\n"
+      f"Address: {STORE_ADDRESS}, Baku\n"
+      f"Phone / WhatsApp: {STORE_PHONE_DISPLAY}\n"
       "Metro Station: Azi Aslanov (Həzi Aslanov m/s, Ази Асланов)\n"
       "Area: Near Azi Aslanov metro station, Khatai district, Baku\n"
       "Assortment: Korean Cosmetics, Anua, Beauty of Joseon, Makeup, Skincare,"
