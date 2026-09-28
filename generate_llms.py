@@ -37,6 +37,105 @@ STORE_DESCRIPTION = (
     "Makiyaj Cosmetics — корейская косметика и товары для макияжа. Баку, "
     f"{STORE_ADDRESS}, у метро Ази Асланов. Цены, заказ через WhatsApp."
 )
+STORE_DESCRIPTION_AZ = (
+    "Makiyaj Cosmetics — Bakıda koreya kosmetikası və makiyaj məhsulları. "
+    f"{STORE_ADDRESS}, Azi Aslanov metrosu yaxınlığında. Qiymətlər, WhatsApp"
+    " ilə sifariş."
+)
+
+# Кроме перевода названий категорий (data/category_az.csv), всё остальное —
+# заголовки, хлебные крошки, подвал — переведено вручную здесь: объём
+# фиксированных фраз маленький, спец. API/кэш под это не нужен.
+UI = {
+  "ru": {
+      "home_name": STORE_NAME,
+      "categories": "Категории",
+      "brands": "Бренды",
+      "more": "Ещё",
+      "other_goods": "Прочие товары",
+      "other_desc": "Товары, не вошедшие в отдельные категории и бренды. ",
+      "back": "&larr; Назад",
+      "forward": "Вперёд &rarr;",
+      "page": "Страница",
+      "in_stock": "Товаров в наличии",
+      "prices_from": lambda lo, hi: f"Цены от {lo} до {hi} AZN. ",
+      "brands_label": lambda names: f"Бренды: {names}. ",
+      "categories_label": lambda names: f"Категории: {names}. ",
+      "updated": "Цены и остатки обновляются каждые 6 часов. ",
+      "order_via": "Заказ через WhatsApp",
+      "near_metro": "рядом с метро Ази Асланов",
+      "baku": "Баку",
+      "store_phrase": f"Магазин {STORE_NAME}",
+      "cat_title": lambda name: f"{name} — цены в Баку | {STORE_NAME}",
+      "cat_h1": lambda name: f"{name}: цены и наличие в Баку",
+      "brand_title": lambda name: f"{name} — купить в Баку, цены | {STORE_NAME}",
+      "other_title": lambda name: f"{name} | {STORE_NAME}",
+      "footer": lambda: (
+          f"{html.escape(STORE_NAME)} · Баку, {html.escape(STORE_ADDRESS)}"
+          f" (рядом с метро Ази Асланов) · WhatsApp:"
+          f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
+          ' <a href="/llms.txt">Каталог в текстовом виде</a>'
+      ),
+      "home_title": (
+          f"{STORE_NAME} — косметика в Баку, м. Ази Асланов: каталог и цены"
+      ),
+      "home_intro": lambda n: (
+          f"{html.escape(STORE_NAME)} — магазин косметики и товаров для красоты"
+          f" в Баку. Адрес: {html.escape(STORE_ADDRESS)}, рядом с метро Ази"
+          " Асланов (Хатаинский район). "
+          f"В наличии {n} товаров: корейская косметика, макияж, уход за кожей"
+          " и волосами, парфюмерия. Цены в манатах (AZN), цены и остатки"
+          " обновляются каждые 6 часов. Заказ через WhatsApp:"
+          f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a>.'
+      ),
+      "store_description": STORE_DESCRIPTION,
+      "lang_switch": "Русский",
+  },
+  "az": {
+      "home_name": STORE_NAME,
+      "categories": "Kateqoriyalar",
+      "brands": "Brendlər",
+      "more": "Digər",
+      "other_goods": "Digər mallar",
+      "other_desc": "Ayrıca kateqoriyaya və ya brendə düşməyən mallar. ",
+      "back": "&larr; Geri",
+      "forward": "İrəli &rarr;",
+      "page": "Səhifə",
+      "in_stock": "Anbarda olan mallar",
+      "prices_from": lambda lo, hi: f"Qiymətlər {lo}-dan {hi} AZN-ə qədər. ",
+      "brands_label": lambda names: f"Brendlər: {names}. ",
+      "categories_label": lambda names: f"Kateqoriyalar: {names}. ",
+      "updated": "Qiymətlər və qalıqlar hər 6 saatdan bir yenilənir. ",
+      "order_via": "WhatsApp ilə sifariş",
+      "near_metro": "Azi Aslanov metrosu yaxınlığında",
+      "baku": "Bakı",
+      "store_phrase": f"{STORE_NAME} mağazası",
+      "cat_title": lambda name: f"{name} — Bakıda qiymətlər | {STORE_NAME}",
+      "cat_h1": lambda name: f"{name}: Bakıda qiymət və mövcudluq",
+      "brand_title": lambda name: f"{name} — Bakıda al, qiymətlər | {STORE_NAME}",
+      "other_title": lambda name: f"{name} | {STORE_NAME}",
+      "footer": lambda: (
+          f"{html.escape(STORE_NAME)} · Bakı, {html.escape(STORE_ADDRESS)}"
+          f" (Azi Aslanov metrosu yaxınlığında) · WhatsApp:"
+          f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
+          ' <a href="/llms.txt">Mətn formatında katalog</a>'
+      ),
+      "home_title": (
+          f"{STORE_NAME} — Bakıda kosmetika, Azi Aslanov m.: kataloq və qiymətlər"
+      ),
+      "home_intro": lambda n: (
+          f"{html.escape(STORE_NAME)} — Bakıda kosmetika və gözəllik mağazası."
+          f" Ünvan: {html.escape(STORE_ADDRESS)}, Azi Aslanov metrosu"
+          " yaxınlığında (Xətai rayonu). "
+          f"Anbarda {n} mal: koreya kosmetikası, makiyaj, dəri və saç qulluğu,"
+          " ətriyyat. Qiymətlər manatla (AZN), qiymətlər və qalıqlar hər 6"
+          " saatdan bir yenilənir. WhatsApp ilə sifariş:"
+          f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a>.'
+      ),
+      "store_description": STORE_DESCRIPTION_AZ,
+      "lang_switch": "Azərbaycan",
+  },
+}
 
 
 def parse_price_azn(price_val):
@@ -60,6 +159,10 @@ _SIZE_UNITS = {
     "мл": "мл", "ml": "мл", "гр": "г", "gr": "г", "г": "г", "g": "г",
     "кг": "кг", "kg": "кг", "л": "л", "l": "л",
 }
+_SIZE_UNITS_AZ = {
+    "мл": "ml", "ml": "ml", "гр": "q", "gr": "q", "г": "q", "g": "q",
+    "кг": "kq", "kg": "kq", "л": "l", "l": "l",
+}
 
 
 def normalize_barcode(value):
@@ -80,11 +183,12 @@ def is_valid_gtin(digits):
   return (10 - total % 10) % 10 == int(digits[-1])
 
 
-def extract_size(text):
+def extract_size(text, lang="ru"):
   m = _SIZE_RE.search(text or "")
   if not m:
     return None
-  return f"{m.group(1)} {_SIZE_UNITS[m.group(2).lower()]}"
+  units = _SIZE_UNITS_AZ if lang == "az" else _SIZE_UNITS
+  return f"{m.group(1)} {units[m.group(2).lower()]}"
 
 
 def load_name_map():
@@ -92,6 +196,28 @@ def load_name_map():
     return {}
   with open(NAME_MAP_FILE, encoding="utf-8", newline="") as f:
     return {row["barcode"]: row for row in csv.DictReader(f)}
+
+
+# Перевод названий категорий на азербайджанский. Ключ — уже ОБРЕЗАННАЯ до
+# первого слова/фразы перед запятой форма (как её возвращает
+# `category.split(",")[0]` в build_display_title/run — сайт везде показывает
+# именно её, а не полную формулировку из справочника), собран и сверен
+# вручную 2026-09-27 (см. data/category_az_draft.csv — черновик с проверкой
+# по полным названиям из партнёрского каталога).
+CATEGORY_AZ_FILE = "data/category_az.csv"
+
+
+def load_category_az():
+  if not os.path.exists(CATEGORY_AZ_FILE):
+    return {}
+  with open(CATEGORY_AZ_FILE, encoding="utf-8", newline="") as f:
+    return {row["category_ru"]: row["category_az"] for row in csv.DictReader(f)}
+
+
+def category_display(category, lang, category_az):
+  if lang == "az" and category:
+    return category_az.get(category, category)
+  return category
 
 
 def _letters_only(text):
@@ -140,7 +266,7 @@ def _smart_case(token):
   return token[:1] + token[1:].lower().replace("̇", "")
 
 
-def build_display_title(raw_title, info):
+def build_display_title(raw_title, info, lang="ru", category_az=None):
   """Название для витрины и ИИ: бренд + модель, объём, тип товара.
 
   Только факты из справочника (бренд, категория, объём) — строку названия
@@ -149,7 +275,8 @@ def build_display_title(raw_title, info):
   info = info or {}
   brand = clean_brand(info.get("brand"))
   category = (info.get("category") or "").split(",")[0].strip()
-  size = extract_size(raw_title) or (info.get("size") or "").strip() or None
+  category = category_display(category, lang, category_az or {})
+  size = extract_size(raw_title, lang) or (info.get("size") or "").strip() or None
 
   cleaned = raw_title.replace("¶", " ")
   tokens = _SIZE_RE.sub(" ", cleaned).split()
@@ -269,9 +396,10 @@ def _json_script(data):
   )
 
 
-def pagination_html(base_path, page_num, total_pages):
+def pagination_html(base_path, page_num, total_pages, lang="ru"):
   if total_pages <= 1:
     return ""
+  strings = UI[lang]
 
   def url(n):
     return base_path if n == 1 else f"{base_path}page-{n}.html"
@@ -282,7 +410,7 @@ def pagination_html(base_path, page_num, total_pages):
   )
   parts = []
   if page_num > 1:
-    parts.append(f'<a href="{url(page_num - 1)}" class="page-link">&larr; Назад</a>')
+    parts.append(f'<a href="{url(page_num - 1)}" class="page-link">{strings["back"]}</a>')
   previous = 0
   for n in shown:
     if n - previous > 1:
@@ -293,12 +421,12 @@ def pagination_html(base_path, page_num, total_pages):
       parts.append(f'<a href="{url(n)}" class="page-link">{n}</a>')
     previous = n
   if page_num < total_pages:
-    parts.append(f'<a href="{url(page_num + 1)}" class="page-link">Вперёд &rarr;</a>')
+    parts.append(f'<a href="{url(page_num + 1)}" class="page-link">{strings["forward"]}</a>')
   return f'<div class="pagination">{"".join(parts)}</div>'
 
 
 def render_page(title, description, canonical, h1, intro_html, main_html,
-                breadcrumbs, offers=None, pagination=""):
+                breadcrumbs, offers=None, pagination="", lang="ru", alt_links=None):
   store_ld = {
       "@context": "https://schema.org",
       "@type": "Store",
@@ -326,8 +454,17 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
   )
   crumbs += (" › " if crumbs else "") + f"<span>{html.escape(breadcrumbs[-1][0])}</span>"
 
+  # hreflang: обе языковые версии остаются self-canonical и просто ссылаются
+  # друг на друга — принудительного редиректа по IP/языку браузера нет
+  # (боты ходят в основном с американских IP независимо от того, кто реально
+  # спрашивает, форсированный редирект их бы путал).
+  alt_html = "".join(
+      f'<link rel="alternate" hreflang="{hl}" href="{url}">'
+      for hl, url in (alt_links or [])
+  )
+
   return f"""<!DOCTYPE html>
-<html lang="ru">
+<html lang="{lang}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -335,6 +472,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
     <title>{html.escape(title)}</title>
     <meta name="description" content="{html.escape(description, quote=True)}">
     <link rel="canonical" href="{canonical}">
+    {alt_html}
     {_json_script(store_ld)}
     {_json_script(crumb_ld)}
     <style>{PAGE_CSS}</style>
@@ -345,51 +483,69 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
     <div class="intro">{intro_html}</div>
     {main_html}
     {pagination}
-    <footer>{html.escape(STORE_NAME)} · Баку, {html.escape(STORE_ADDRESS)} (рядом с метро Ази Асланов) · WhatsApp: <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> · <a href="/llms.txt">Каталог в текстовом виде</a></footer>
+    <footer>{UI[lang]["footer"]()}</footer>
 </body>
 </html>"""
 
 
-def hub_texts(hub):
+def hub_texts(hub, lang="ru", category_az=None, display_name=None):
   """Заголовок, H1, вводный текст и description: только факты из данных, чтобы
   каждая страница получалась уникальной, а не шаблонной болванкой."""
+  strings = UI[lang]
   group = hub["items"]
   prices = [p for p in (parse_price_azn(i["price"]) for i in group) if p is not None]
   price_txt = (
-      f"Цены от {_fmt_price(min(prices))} до {_fmt_price(max(prices))} AZN. "
+      strings["prices_from"](_fmt_price(min(prices)), _fmt_price(max(prices)))
       if prices else ""
   )
-  name = hub["name"]
+  # Название бренда не переводится, название категории — переводится (если
+  # есть в словаре), берём его из display_name, посчитанного вызывающим кодом.
+  name = display_name if display_name is not None else hub["name"]
   if hub["kind"] == "kategoriya":
     others = collections.Counter(i["brand"] for i in group if i["brand"]).most_common(3)
-    extra = f"Бренды: {', '.join(b for b, _ in others)}. " if others else ""
-    title = f"{name} — цены в Баку | {STORE_NAME}"
-    h1 = f"{name}: цены и наличие в Баку"
+    extra = strings["brands_label"](", ".join(b for b, _ in others)) if others else ""
+    title = strings["cat_title"](name)
+    h1 = strings["cat_h1"](name)
   elif hub["kind"] == "brend":
-    others = collections.Counter(i["category"] for i in group if i["category"]).most_common(3)
-    extra = f"Категории: {', '.join(c for c, _ in others)}. " if others else ""
-    title = f"{name} — купить в Баку, цены | {STORE_NAME}"
-    h1 = f"{name}: цены и наличие в Баку"
+    cats = collections.Counter(
+        category_display(i["category"], lang, category_az or {})
+        for i in group if i["category"]
+    ).most_common(3)
+    extra = strings["categories_label"](", ".join(c for c, _ in cats)) if cats else ""
+    title = strings["brand_title"](name)
+    h1 = strings["cat_h1"](name)
   else:
-    extra = "Товары, не вошедшие в отдельные категории и бренды. "
-    title = f"{name} | {STORE_NAME}"
-    h1 = f"{name}: цены и наличие в Баку"
+    extra = strings["other_desc"]
+    title = strings["other_title"](name)
+    h1 = strings["cat_h1"](name)
   plain = (
-      f"Товаров в наличии: {len(group)}. {price_txt}{extra}"
-      f"Магазин {STORE_NAME}, Баку, рядом с метро Ази Асланов. "
-      f"Заказ через WhatsApp: {STORE_PHONE_DISPLAY}."
+      f"{strings['in_stock']}: {len(group)}. {price_txt}{extra}"
+      f"{strings['store_phrase']}, {strings['baku']}, {strings['near_metro']}. "
+      f"{strings['order_via']}: {STORE_PHONE_DISPLAY}."
   )
   intro_html = (
-      f"{html.escape(plain.rsplit(' Заказ через WhatsApp', 1)[0])} "
-      f'Цены и остатки обновляются каждые 6 часов. '
-      f'Заказ через WhatsApp: <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a>.'
+      f"{html.escape(plain.rsplit(' ' + strings['order_via'], 1)[0])} "
+      f"{strings['updated']}"
+      f'{strings["order_via"]}: <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a>.'
   )
   return title, h1, intro_html, _shorten(plain)
 
 
-def hub_grid(heading, hubs):
+def lang_path(path, lang):
+  """RU-путь /stores/<slug>/... -> AZ-путь /stores/<slug>/az/... (RU без изменений)."""
+  if lang == "ru":
+    return path
+  return path.replace(f"/stores/{STORE_SLUG}/", f"/stores/{STORE_SLUG}/az/", 1)
+
+
+def hub_grid(heading, hubs, lang="ru", category_az=None):
+  def name_of(h):
+    if lang == "az" and h["kind"] == "kategoriya":
+      return (category_az or {}).get(h["name"], h["name"])
+    return h["name"]
+
   links = "".join(
-      f'<a class="hub-link" href="{h["path"]}">{html.escape(h["name"])}'
+      f'<a class="hub-link" href="{lang_path(h["path"], lang)}">{html.escape(name_of(h))}'
       f' <span>{len(h["items"])}</span></a>'
       for h in hubs
   )
@@ -420,6 +576,7 @@ def run():
     sys.exit(1)
 
   name_map = load_name_map()
+  category_az = load_category_az()
   known_brands = build_known_brands(name_map)
   skipped_no_stock = 0
   skipped_bad_price = 0
@@ -483,6 +640,7 @@ def run():
         "price": price_val,
         "gtin": digits if is_valid_gtin(digits) else "",
         "display": build_display_title(raw_title, info),
+        "display_az": build_display_title(raw_title, info, "az", category_az),
         "info": info,
         "brand": brand,
         "category": (info.get("category") or "").split(",")[0].strip(),
@@ -515,27 +673,37 @@ def run():
             <div class="price">{i['price']}</div>
             <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
         </div>"""
+    i["card_az"] = f"""
+        <div class="card">
+            <div class="title">{html.escape(i['display_az'])}</div>
+            <div class="price">{i['price']}</div>
+            <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
+        </div>"""
 
     llms_all_lines.append(f"- {i['display']} | {i['price']} | Заказать: {wa_link}")
 
-    product = {"@type": "Product", "name": i["display"]}
-    if i["gtin"]:
-      product["gtin"] = i["gtin"]
-    if clean_brand(i["info"].get("brand")):
-      product["brand"] = {"@type": "Brand", "name": clean_brand(i["info"]["brand"])}
-    if i["info"].get("category"):
-      product["category"] = i["info"]["category"]
-    offer = {
-        "@type": "Offer",
-        "itemOffered": product,
-        "priceCurrency": "AZN",
-        "availability": "https://schema.org/InStock",
-        "url": wa_link,
-    }
     price_num = parse_price_azn(i["price"])
-    if price_num is not None:
-      offer["price"] = price_num
-    i["offer"] = offer
+    for lang, offer_key, display_key in (
+        ("ru", "offer", "display"), ("az", "offer_az", "display_az"),
+    ):
+      product = {"@type": "Product", "name": i[display_key]}
+      if i["gtin"]:
+        product["gtin"] = i["gtin"]
+      if clean_brand(i["info"].get("brand")):
+        product["brand"] = {"@type": "Brand", "name": clean_brand(i["info"]["brand"])}
+      if i["info"].get("category"):
+        cat = i["info"]["category"].split(",")[0].strip()
+        product["category"] = category_display(cat, lang, category_az)
+      offer = {
+          "@type": "Offer",
+          "itemOffered": product,
+          "priceCurrency": "AZN",
+          "availability": "https://schema.org/InStock",
+          "url": wa_link,
+      }
+      if price_num is not None:
+        offer["price"] = price_num
+      i[offer_key] = offer
 
   store_dir = f"stores/{STORE_SLUG}"
   os.makedirs(store_dir, exist_ok=True)
@@ -546,7 +714,7 @@ def run():
   for old_file in os.listdir(store_dir):
     if re.fullmatch(r"page-\d+\.html", old_file):
       os.remove(os.path.join(store_dir, old_file))  # старые плоские страницы
-  for sub in ("kategoriya", "brend", "prochee"):
+  for sub in ("kategoriya", "brend", "prochee", "az"):
     shutil.rmtree(os.path.join(store_dir, sub), ignore_errors=True)
 
   by_category = collections.defaultdict(list)
@@ -592,68 +760,115 @@ def run():
       f" | в 'Прочее': {len(leftovers)}"
   )
 
-  sitemap_urls = [STORE_CANONICAL_URL]
-  home_crumb = (STORE_NAME, STORE_CANONICAL_URL)
+  def hub_display_name(hub, lang):
+    if hub["kind"] == "prochee":
+      return UI[lang]["other_goods"]
+    if hub["kind"] == "kategoriya" and lang == "az":
+      return category_az.get(hub["name"], hub["name"])
+    return hub["name"]
 
+  az_home_url = SITE_ROOT + lang_path(f"/stores/{STORE_SLUG}/", "az")
+  sitemap_urls = [STORE_CANONICAL_URL, az_home_url]
+  home_crumb = {
+      "ru": (STORE_NAME, STORE_CANONICAL_URL),
+      "az": (STORE_NAME, SITE_ROOT + lang_path(f"/stores/{STORE_SLUG}/", "az")),
+  }
+
+  # Каждый хаб рендерится дважды — RU (как раньше, без изменений в путях,
+  # чтобы не сбросить уже начавшуюся индексацию) и AZ (зеркально, под /az/).
+  # Оба варианта self-canonical и связаны через hreflang, без принудительного
+  # редиректа по IP — боты в основном ходят с американских IP независимо от
+  # того, кто реально спрашивает, форсированный редирект их бы только путал.
   for hub in hubs:
-    title, h1, intro_html, description = hub_texts(hub)
     total_pages = max(1, (len(hub["items"]) + HUB_PAGE_SIZE - 1) // HUB_PAGE_SIZE)
-    hub_dir = os.path.join(store_dir, hub["kind"], hub["slug"]).rstrip("\\/")
-    os.makedirs(hub_dir, exist_ok=True)
-    for page_num in range(1, total_pages + 1):
-      chunk = hub["items"][(page_num - 1) * HUB_PAGE_SIZE : page_num * HUB_PAGE_SIZE]
-      if page_num == 1:
-        page_path, filename = hub["path"], "index.html"
-      else:
-        page_path, filename = f"{hub['path']}page-{page_num}.html", f"page-{page_num}.html"
-      canonical = SITE_ROOT + page_path
-      suffix = "" if page_num == 1 else f" — стр. {page_num}"
-      page_html = render_page(
-          title=title + suffix,
-          description=(
-              description if page_num == 1
-              else _shorten(f"Страница {page_num}. {description}")
-          ),
-          canonical=canonical,
-          h1=h1,
-          intro_html=intro_html,
-          main_html=f'<div class="grid">{"".join(i["card"] for i in chunk)}</div>',
-          breadcrumbs=[home_crumb, (hub["name"], SITE_ROOT + hub["path"])]
-          + ([(f"Страница {page_num}", canonical)] if page_num > 1 else []),
-          offers=[i["offer"] for i in chunk],
-          pagination=pagination_html(hub["path"], page_num, total_pages),
+    for lang in ("ru", "az"):
+      strings = UI[lang]
+      display_name = hub_display_name(hub, lang)
+      title, h1, intro_html, description = hub_texts(
+          hub, lang=lang, category_az=category_az, display_name=display_name
       )
-      with open(os.path.join(hub_dir, filename), "w", encoding="utf-8", newline="\n") as f:
-        f.write(page_html)
-      sitemap_urls.append(canonical)
+      hub_path = lang_path(hub["path"], lang)
+      hub_dir = (
+          os.path.join(store_dir, hub["kind"], hub["slug"]) if lang == "ru"
+          else os.path.join(store_dir, "az", hub["kind"], hub["slug"])
+      ).rstrip("\\/")
+      os.makedirs(hub_dir, exist_ok=True)
+      card_key = "card" if lang == "ru" else "card_az"
+      offer_key = "offer" if lang == "ru" else "offer_az"
+      for page_num in range(1, total_pages + 1):
+        chunk = hub["items"][(page_num - 1) * HUB_PAGE_SIZE : page_num * HUB_PAGE_SIZE]
+        page_suffix = "" if page_num == 1 else f"page-{page_num}.html"
+        # hreflang считаем от языка-нейтрального hub["path"] (RU-форма без
+        # /az/), а не от уже сконвертированного hub_path — иначе на AZ-версии
+        # получалось /az/az/... (двойная вставка).
+        base_page_path = hub["path"] + page_suffix
+        if page_num == 1:
+          page_path, filename = hub_path, "index.html"
+        else:
+          page_path, filename = f"{hub_path}page-{page_num}.html", f"page-{page_num}.html"
+        canonical = SITE_ROOT + page_path
+        suffix = "" if page_num == 1 else f" — {strings['page']} {page_num}"
+        alt_links = [
+            ("ru", SITE_ROOT + lang_path(base_page_path, "ru")),
+            ("az", SITE_ROOT + lang_path(base_page_path, "az")),
+        ]
+        page_html = render_page(
+            title=title + suffix,
+            description=(
+                description if page_num == 1
+                else _shorten(f"{strings['page']} {page_num}. {description}")
+            ),
+            canonical=canonical,
+            h1=h1,
+            intro_html=intro_html,
+            main_html=f'<div class="grid">{"".join(i[card_key] for i in chunk)}</div>',
+            breadcrumbs=[home_crumb[lang], (display_name, SITE_ROOT + hub_path)]
+            + ([(f"{strings['page']} {page_num}", canonical)] if page_num > 1 else []),
+            offers=[i[offer_key] for i in chunk],
+            pagination=pagination_html(hub_path, page_num, total_pages, lang=lang),
+            lang=lang,
+            alt_links=alt_links,
+        )
+        with open(os.path.join(hub_dir, filename), "w", encoding="utf-8", newline="\n") as f:
+          f.write(page_html)
+        sitemap_urls.append(canonical)
 
-  home_intro = (
-      f"{html.escape(STORE_NAME)} — магазин косметики и товаров для красоты в Баку. "
-      f"Адрес: {html.escape(STORE_ADDRESS)}, рядом с метро Ази Асланов "
-      "(Хатаинский район). "
-      f"В наличии {len(items)} товаров: корейская косметика, макияж, уход за кожей "
-      "и волосами, парфюмерия. Цены в манатах (AZN), цены и остатки обновляются "
-      "каждые 6 часов. Заказ через WhatsApp: "
-      f'<a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a>.'
-  )
-  home_main = hub_grid("Категории", category_hubs) + hub_grid("Бренды", brand_hubs)
-  if leftovers:
-    home_main += hub_grid("Ещё", [h for h in hubs if h["kind"] == "prochee"])
-  home_html = render_page(
-      title=f"{STORE_NAME} — косметика в Баку, м. Ази Асланов: каталог и цены",
-      description=STORE_DESCRIPTION,
-      canonical=STORE_CANONICAL_URL,
-      h1=STORE_NAME,
-      intro_html=home_intro,
-      main_html=home_main,
-      breadcrumbs=[home_crumb],
-  )
-  # Главная — canonical-адрес витрины, дублируется и в корень, и в папку магазина
-  # (см. STORE_CANONICAL_URL выше).
-  with open("index.html", "w", encoding="utf-8", newline="\n") as f:
-    f.write(home_html)
-  with open(f"{store_dir}/index.html", "w", encoding="utf-8", newline="\n") as f:
-    f.write(home_html)
+  home_alt_links = [("ru", STORE_CANONICAL_URL), ("az", az_home_url)]
+  for lang in ("ru", "az"):
+    strings = UI[lang]
+    home_main = (
+        hub_grid(strings["categories"], category_hubs, lang=lang, category_az=category_az)
+        + hub_grid(strings["brands"], brand_hubs, lang=lang, category_az=category_az)
+    )
+    if leftovers:
+      home_main += hub_grid(
+          strings["more"], [h for h in hubs if h["kind"] == "prochee"],
+          lang=lang, category_az=category_az,
+      )
+    home_html = render_page(
+        title=strings["home_title"],
+        description=strings["store_description"],
+        canonical=STORE_CANONICAL_URL if lang == "ru" else az_home_url,
+        h1=STORE_NAME,
+        intro_html=strings["home_intro"](len(items)),
+        main_html=home_main,
+        breadcrumbs=[home_crumb[lang]],
+        lang=lang,
+        alt_links=home_alt_links,
+    )
+    if lang == "ru":
+      # Главная — canonical-адрес витрины, дублируется и в корень, и в папку
+      # магазина (см. STORE_CANONICAL_URL выше). AZ-версии корневого дубля не
+      # нужно — она открывается только по /stores/makiyaj/az/.
+      with open("index.html", "w", encoding="utf-8", newline="\n") as f:
+        f.write(home_html)
+      with open(f"{store_dir}/index.html", "w", encoding="utf-8", newline="\n") as f:
+        f.write(home_html)
+    else:
+      az_home_dir = os.path.join(store_dir, "az")
+      os.makedirs(az_home_dir, exist_ok=True)
+      with open(f"{az_home_dir}/index.html", "w", encoding="utf-8", newline="\n") as f:
+        f.write(home_html)
 
   # 2. Создаем файл верификации Google Search Console
   google_html_content = f"google-site-verification: {GOOGLE_VERIFY_FILE}"
