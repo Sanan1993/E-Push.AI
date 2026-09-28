@@ -1,5 +1,6 @@
 import collections
 import csv
+import datetime
 import html
 import io
 import json
@@ -74,7 +75,8 @@ UI = {
           f"{html.escape(STORE_NAME)} · Баку, {html.escape(STORE_ADDRESS)}"
           f" (рядом с метро Ази Асланов) · WhatsApp:"
           f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
-          ' <a href="/llms.txt">Каталог в текстовом виде</a>'
+          ' <a href="/llms.txt">Каталог в текстовом виде</a> ·'
+          f' <a href="/stores/{STORE_SLUG}/tseny/">Актуальные цены</a>'
       ),
       "home_title": (
           f"{STORE_NAME} — косметика в Баку, м. Ази Асланов: каталог и цены"
@@ -90,6 +92,22 @@ UI = {
       ),
       "store_description": STORE_DESCRIPTION,
       "lang_switch": "Русский",
+      "faq_heading": "Частые вопросы",
+      "faq_cheap_q": lambda name: f"Где недорого купить {name} в Баку?",
+      "faq_cheap_a": lambda name, count, price_txt: (
+          f"В {STORE_NAME} сейчас {count} товаров в категории «{name}». {price_txt}"
+          f"Заказ через WhatsApp: {STORE_PHONE_DISPLAY}."
+      ),
+      "faq_price_q": lambda name: f"Сколько стоит {name} в Баку?",
+      "faq_price_a_known": lambda price_txt: price_txt,
+      "faq_price_a_unknown": f"Цены в {STORE_NAME} обновляются каждые 6 часов.",
+      "prices_page_title": f"Актуальные цены — {STORE_NAME}",
+      "prices_page_h1": "Актуальные цены по категориям",
+      "prices_page_updated": lambda ts: f"Обновлено: {ts} (данные обновляются каждые 6 часов).",
+      "prices_col_category": "Категория",
+      "prices_col_range": "Цены, AZN",
+      "prices_col_count": "Товаров",
+      "prices_link_label": "Актуальные цены",
   },
   "az": {
       "home_name": STORE_NAME,
@@ -118,7 +136,8 @@ UI = {
           f"{html.escape(STORE_NAME)} · Bakı, {html.escape(STORE_ADDRESS)}"
           f" (Azi Aslanov metrosu yaxınlığında) · WhatsApp:"
           f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
-          ' <a href="/llms.txt">Mətn formatında katalog</a>'
+          ' <a href="/llms.txt">Mətn formatında katalog</a> ·'
+          f' <a href="/stores/{STORE_SLUG}/az/tseny/">Cari qiymətlər</a>'
       ),
       "home_title": (
           f"{STORE_NAME} — Bakıda kosmetika, Azi Aslanov m.: kataloq və qiymətlər"
@@ -134,6 +153,22 @@ UI = {
       ),
       "store_description": STORE_DESCRIPTION_AZ,
       "lang_switch": "Azərbaycan",
+      "faq_heading": "Tez-tez verilən suallar",
+      "faq_cheap_q": lambda name: f"Bakıda {name} haradan ucuz almaq olar?",
+      "faq_cheap_a": lambda name, count, price_txt: (
+          f"{STORE_NAME}-də hazırda «{name}» kateqoriyasında {count} məhsul var. {price_txt}"
+          f"WhatsApp ilə sifariş: {STORE_PHONE_DISPLAY}."
+      ),
+      "faq_price_q": lambda name: f"Bakıda {name} neçəyədir?",
+      "faq_price_a_known": lambda price_txt: price_txt,
+      "faq_price_a_unknown": f"{STORE_NAME}-də qiymətlər hər 6 saatdan bir yenilənir.",
+      "prices_page_title": f"Cari qiymətlər — {STORE_NAME}",
+      "prices_page_h1": "Kateqoriyalar üzrə cari qiymətlər",
+      "prices_page_updated": lambda ts: f"Yenilənib: {ts} (məlumatlar hər 6 saatdan bir yenilənir).",
+      "prices_col_category": "Kateqoriya",
+      "prices_col_range": "Qiymət, AZN",
+      "prices_col_count": "Mal sayı",
+      "prices_link_label": "Cari qiymətlər",
   },
 }
 
@@ -339,6 +374,16 @@ h2 { max-width: 1200px; margin: 28px auto 10px; font-size: 18px; color: #222; }
 .page-current { font-weight: 700; color: #111; }
 footer { max-width: 1200px; margin: 40px auto 0; padding-top: 16px; border-top: 1px solid #ddd; text-align: center; font-size: 13px; color: #666; }
 footer a { color: #0d7a5f; }
+.faq { max-width: 900px; margin: 30px auto 0; }
+.faq h2 { margin: 0 0 12px; }
+.faq-item { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; }
+.faq-item h3 { margin: 0 0 6px; font-size: 15px; color: #111; }
+.faq-item p { margin: 0; font-size: 14px; color: #555; line-height: 1.5; }
+.prices-table { max-width: 900px; margin: 0 auto; width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+.prices-table th, .prices-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+.prices-table th { background: #eef1f0; color: #333; }
+.prices-table a { color: #0d7a5f; text-decoration: none; }
+.prices-updated { text-align: center; color: #777; font-size: 13px; margin: 10px 0 20px; }
 """
 
 
@@ -426,7 +471,8 @@ def pagination_html(base_path, page_num, total_pages, lang="ru"):
 
 
 def render_page(title, description, canonical, h1, intro_html, main_html,
-                breadcrumbs, offers=None, pagination="", lang="ru", alt_links=None):
+                breadcrumbs, offers=None, pagination="", lang="ru", alt_links=None,
+                faq_html="", extra_ld=None):
   store_ld = {
       "@context": "https://schema.org",
       "@type": "Store",
@@ -462,6 +508,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
       f'<link rel="alternate" hreflang="{hl}" href="{url}">'
       for hl, url in (alt_links or [])
   )
+  extra_ld_html = "".join(_json_script(ld) for ld in (extra_ld or []))
 
   return f"""<!DOCTYPE html>
 <html lang="{lang}">
@@ -475,6 +522,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
     {alt_html}
     {_json_script(store_ld)}
     {_json_script(crumb_ld)}
+    {extra_ld_html}
     <style>{PAGE_CSS}</style>
 </head>
 <body>
@@ -483,6 +531,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
     <div class="intro">{intro_html}</div>
     {main_html}
     {pagination}
+    {faq_html}
     <footer>{UI[lang]["footer"]()}</footer>
 </body>
 </html>"""
@@ -531,11 +580,84 @@ def hub_texts(hub, lang="ru", category_az=None, display_name=None):
   return title, h1, intro_html, _shorten(plain)
 
 
+def faq_block(hub, lang, display_name):
+  """FAQPage JSON-LD + видимый блок вопрос-ответ на странице категории/бренда.
+
+  Только для kategoriya/brend (у "Прочее" нет осмысленного "сколько стоит X").
+  Данные те же, что в hub_texts, но текст сформулирован как самостоятельный,
+  цитируемый кусок факта — а не предложение внутри абзаца витрины: по GEO-
+  исследованиям именно такие явные вопрос-ответ фрагменты чаще попадают в
+  ответы ИИ-ассистентов, чем тот же факт внутри сплошного текста.
+  """
+  if hub["kind"] not in ("kategoriya", "brend"):
+    return "", None
+  strings = UI[lang]
+  group = hub["items"]
+  prices = [p for p in (parse_price_azn(i["price"]) for i in group) if p is not None]
+  price_txt = (
+      strings["prices_from"](_fmt_price(min(prices)), _fmt_price(max(prices)))
+      if prices else ""
+  )
+  name = display_name
+  # В вопросах категория идёт строчными буквами ("недорого купить тушь..."),
+  # как и в build_display_title; название бренда регистр не меняет.
+  name_lc = (name[:1].lower() + name[1:]) if hub["kind"] == "kategoriya" else name
+
+  q1 = strings["faq_cheap_q"](name_lc)
+  a1 = strings["faq_cheap_a"](name, len(group), price_txt)
+  q2 = strings["faq_price_q"](name_lc)
+  a2 = strings["faq_price_a_known"](price_txt) if price_txt else strings["faq_price_a_unknown"]
+
+  faq_ld = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+          {
+              "@type": "Question", "name": q,
+              "acceptedAnswer": {"@type": "Answer", "text": a},
+          }
+          for q, a in ((q1, a1), (q2, a2))
+      ],
+  }
+  faq_html = (
+      f'<section class="faq"><h2>{html.escape(strings["faq_heading"])}</h2>'
+      f'<div class="faq-item"><h3>{html.escape(q1)}</h3><p>{html.escape(a1)}</p></div>'
+      f'<div class="faq-item"><h3>{html.escape(q2)}</h3><p>{html.escape(a2)}</p></div>'
+      f"</section>"
+  )
+  return faq_html, faq_ld
+
+
 def lang_path(path, lang):
   """RU-путь /stores/<slug>/... -> AZ-путь /stores/<slug>/az/... (RU без изменений)."""
   if lang == "ru":
     return path
   return path.replace(f"/stores/{STORE_SLUG}/", f"/stores/{STORE_SLUG}/az/", 1)
+
+
+def prices_table_html(category_hubs, lang, category_az):
+  strings = UI[lang]
+  rows = []
+  for hub in category_hubs:
+    group = hub["items"]
+    prices = [p for p in (parse_price_azn(i["price"]) for i in group) if p is not None]
+    if not prices:
+      continue
+    name = category_az.get(hub["name"], hub["name"]) if lang == "az" else hub["name"]
+    rows.append((name, min(prices), max(prices), len(group), lang_path(hub["path"], lang)))
+  rows.sort(key=lambda r: r[0].lower())
+  body = "".join(
+      f'<tr><td><a href="{path}">{html.escape(name)}</a></td>'
+      f"<td>{_fmt_price(lo)}–{_fmt_price(hi)}</td><td>{count}</td></tr>"
+      for name, lo, hi, count, path in rows
+  )
+  return (
+      f'<table class="prices-table"><thead><tr>'
+      f'<th>{html.escape(strings["prices_col_category"])}</th>'
+      f'<th>{html.escape(strings["prices_col_range"])}</th>'
+      f'<th>{html.escape(strings["prices_col_count"])}</th>'
+      f"</tr></thead><tbody>{body}</tbody></table>"
+  )
 
 
 def hub_grid(heading, hubs, lang="ru", category_az=None):
@@ -812,6 +934,9 @@ def run():
             ("ru", SITE_ROOT + lang_path(base_page_path, "ru")),
             ("az", SITE_ROOT + lang_path(base_page_path, "az")),
         ]
+        # FAQ-блок только на первой странице хаба (не на page-2/3...) — иначе
+        # одинаковый вопрос-ответ дублировался бы на каждой странице пагинации.
+        faq_html, faq_ld = faq_block(hub, lang, display_name) if page_num == 1 else ("", None)
         page_html = render_page(
             title=title + suffix,
             description=(
@@ -828,10 +953,46 @@ def run():
             pagination=pagination_html(hub_path, page_num, total_pages, lang=lang),
             lang=lang,
             alt_links=alt_links,
+            faq_html=faq_html,
+            extra_ld=[faq_ld] if faq_ld else None,
         )
         with open(os.path.join(hub_dir, filename), "w", encoding="utf-8", newline="\n") as f:
           f.write(page_html)
         sitemap_urls.append(canonical)
+
+  # Инструмент 1: отдельная страница "живых цен" по всем категориям — не
+  # спрятанное предложение внутри карточек товара, а самостоятельный,
+  # регулярно обновляемый источник данных. По GEO-исследованиям именно такой
+  # тип контента (оригинальные, обновляемые данные) чаще всего попадает в
+  # ответы ИИ-ассистентов, а плотный список карточек товаров — плохо
+  # извлекаемый фрагмент текста.
+  now_ts = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
+  prices_alt_links = [
+      ("ru", SITE_ROOT + f"/stores/{STORE_SLUG}/tseny/"),
+      ("az", SITE_ROOT + f"/stores/{STORE_SLUG}/az/tseny/"),
+  ]
+  for lang in ("ru", "az"):
+    strings = UI[lang]
+    table_html = prices_table_html(category_hubs, lang, category_az)
+    prices_path = lang_path(f"/stores/{STORE_SLUG}/tseny/", lang)
+    prices_dir = os.path.join(store_dir, "az", "tseny") if lang == "az" else os.path.join(store_dir, "tseny")
+    os.makedirs(prices_dir, exist_ok=True)
+    prices_canonical = SITE_ROOT + prices_path
+    updated_line = strings["prices_page_updated"](now_ts)
+    prices_html = render_page(
+        title=strings["prices_page_title"],
+        description=_shorten(f"{strings['prices_page_h1']}. {updated_line}"),
+        canonical=prices_canonical,
+        h1=strings["prices_page_h1"],
+        intro_html=html.escape(updated_line),
+        main_html=table_html,
+        breadcrumbs=[home_crumb[lang], (strings["prices_link_label"], prices_canonical)],
+        lang=lang,
+        alt_links=prices_alt_links,
+    )
+    with open(os.path.join(prices_dir, "index.html"), "w", encoding="utf-8", newline="\n") as f:
+      f.write(prices_html)
+    sitemap_urls.append(prices_canonical)
 
   home_alt_links = [("ru", STORE_CANONICAL_URL), ("az", az_home_url)]
   for lang in ("ru", "az"):
