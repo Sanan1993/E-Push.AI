@@ -17,3 +17,21 @@ round_date,question_id,engine,cited,info_correct,notes
 2026-09-29,16,chatgpt,no,,конкуренты — аптеки (Medical City Dermanci) не косметика
 2026-09-29,17,chatgpt,no,,
 2026-09-29,18,chatgpt,yes,yes,az verified: адрес 7K (совпал с моим переводом) телефон и часы 09:00-18:00 из Sosial Tərəfdaş
+2026-09-29-r2,1,chatgpt,no,,конкуренты: Namu Koreiko Rossmann Olivia KGlowBaku
+2026-09-29-r2,2,chatgpt,yes,yes,ИЗМЕНИЛОСЬ: теперь источник e-push-ai.vercel.app (E-Push AI) напрямую адрес верный 7K вместо Яндекса с домом 9
+2026-09-29-r2,3,chatgpt,yes,yes,ответил на азербайджанском источник e-push-ai.vercel.app 4 раза адрес 7K телефон категории верны
+2026-09-29-r2,4,chatgpt,no,,первая попытка зависла без ответа переспросил и получил нормальный ответ без нас
+2026-09-29-r2,5,chatgpt,no,,
+2026-09-29-r2,6,chatgpt,no,,конкуренты через WhatsApp: RD COSMETICS Parfume Galaxy Daraq Flormar
+2026-09-29-r2,7,chatgpt,no,,
+2026-09-29-r2,8,chatgpt,no,,первая попытка тоже зависала
+2026-09-29-r2,9,chatgpt,no,,az generic по-прежнему не находит
+2026-09-29-r2,10,chatgpt,no,,en generic по-прежнему не находит
+2026-09-29-r2,11,chatgpt,no,,
+2026-09-29-r2,12,chatgpt,no,,
+2026-09-29-r2,13,chatgpt,no,,
+2026-09-29-r2,14,chatgpt,no,,
+2026-09-29-r2,15,chatgpt,yes,yes,верный адрес 7K более уверенно "данные Makiyaj Cosmetics указывают именно 7K"
+2026-09-29-r2,16,chatgpt,no,,по-прежнему аптеки а не мы
+2026-09-29-r2,17,chatgpt,no,,
+2026-09-29-r2,18,chatgpt,yes,yes,az верный адрес 7K и телефон снова через Sosial Tərəfdaş
