@@ -1,0 +1,19 @@
+round_date,question_id,engine,cited,info_correct,notes
+2026-09-29,1,chatgpt,no,,конкуренты: Koreiko Namu Rossmann Olivia KGLOWBAKU
+2026-09-29,2,chatgpt,yes,no,адрес дом 9 (неверный) со ссылкой на Яндекс
+2026-09-29,3,chatgpt,yes,yes,процитирован e-push-ai.vercel.app напрямую 9300 товаров AZN
+2026-09-29,4,chatgpt,no,,
+2026-09-29,5,chatgpt,no,,
+2026-09-29,6,chatgpt,no,,конкуренты через WhatsApp: RD COSMETICS Daraq Parfume Galaxy
+2026-09-29,7,chatgpt,no,,
+2026-09-29,8,chatgpt,no,,
+2026-09-29,9,chatgpt,no,,az-запрос тоже не нашёл нас
+2026-09-29,10,chatgpt,no,,en-запрос тоже не нашёл нас
+2026-09-29,11,chatgpt,no,,
+2026-09-29,12,chatgpt,no,,
+2026-09-29,13,chatgpt,no,,
+2026-09-29,14,chatgpt,no,,
+2026-09-29,15,chatgpt,yes,yes,верный адрес 7K сам указал на расхождение с Яндексом дом 9
+2026-09-29,16,chatgpt,no,,конкуренты — аптеки (Medical City Dermanci) не косметика
+2026-09-29,17,chatgpt,no,,
+2026-09-29,18,chatgpt,yes,yes,az verified: адрес 7K (совпал с моим переводом) телефон и часы 09:00-18:00 из Sosial Tərəfdaş
