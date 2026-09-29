@@ -33,6 +33,10 @@ STORE_ADDRESS = "ул. Илгара Зульфигарова, 7K"
 # стандартной азербайджанской орфографии: Илгар -> İlqar, Зульфигаров ->
 # Zülfüqarov; "7K" не переводится, это номер дома).
 STORE_ADDRESS_AZ = "İlqar Zülfüqarov küç., 7K"
+# Подтверждено владельцем 2026-09-30 (ежедневно, без выходного дня не уточнён
+# отдельно — обычный режим для такого магазина).
+STORE_HOURS_DISPLAY = "09:00–21:00"
+STORE_HOURS_SCHEMA = "Mo-Su 09:00-21:00"
 STORE_PHONE_E164 = f"+{WHATSAPP_NUMBER}"
 STORE_PHONE_DISPLAY = (
     f"+{WHATSAPP_NUMBER[:3]} {WHATSAPP_NUMBER[3:5]} {WHATSAPP_NUMBER[5:8]}"
@@ -88,7 +92,7 @@ UI = {
       "home_intro": lambda n: (
           f"{html.escape(STORE_NAME)} — магазин косметики и товаров для красоты"
           f" в Баку. Адрес: {html.escape(STORE_ADDRESS)}, рядом с метро Ази"
-          " Асланов (Хатаинский район). "
+          f" Асланов (Хатаинский район). Часы работы: {STORE_HOURS_DISPLAY}. "
           f"В наличии {n} товаров: корейская косметика, макияж, уход за кожей"
           " и волосами, парфюмерия. Цены в манатах (AZN), цены и остатки"
           " обновляются каждые 6 часов. Заказ через WhatsApp:"
@@ -149,7 +153,7 @@ UI = {
       "home_intro": lambda n: (
           f"{html.escape(STORE_NAME)} — Bakıda kosmetika və gözəllik mağazası."
           f" Ünvan: {html.escape(STORE_ADDRESS_AZ)}, Azi Aslanov metrosu"
-          " yaxınlığında (Xətai rayonu). "
+          f" yaxınlığında (Xətai rayonu). İş saatları: {STORE_HOURS_DISPLAY}. "
           f"Anbarda {n} mal: koreya kosmetikası, makiyaj, dəri və saç qulluğu,"
           " ətriyyat. Qiymətlər manatla (AZN), qiymətlər və qalıqlar hər 6"
           " saatdan bir yenilənir. WhatsApp ilə sifariş:"
@@ -482,6 +486,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
       "@type": "Store",
       "name": STORE_NAME,
       "telephone": STORE_PHONE_E164,
+      "openingHours": STORE_HOURS_SCHEMA,
       "address": {
           "@type": "PostalAddress",
           "streetAddress": STORE_ADDRESS_AZ if lang == "az" else STORE_ADDRESS,
@@ -1062,6 +1067,7 @@ def run():
       "Location: Baku, Azerbaijan\n"
       f"Address: {STORE_ADDRESS}, Baku\n"
       f"Phone / WhatsApp: {STORE_PHONE_DISPLAY}\n"
+      f"Hours: {STORE_HOURS_DISPLAY} daily\n"
       "Metro Station: Azi Aslanov (Həzi Aslanov m/s, Ази Асланов)\n"
       "Area: Near Azi Aslanov metro station, Khatai district, Baku\n"
       "Assortment: Korean Cosmetics, Anua, Beauty of Joseon, Makeup, Skincare,"
