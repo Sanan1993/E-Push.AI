@@ -29,6 +29,10 @@ STORE_CANONICAL_URL = f"{SITE_ROOT}/stores/{STORE_SLUG}/"
 # Подтверждён владельцем 2026-09-26 (ChatGPT цитировал ещё один адрес — №9 с
 # другим телефоном — он неверный).
 STORE_ADDRESS = "ул. Илгара Зульфигарова, 7K"
+# Азербайджанская форма того же адреса (имя/фамилия транслитерированы по
+# стандартной азербайджанской орфографии: Илгар -> İlqar, Зульфигаров ->
+# Zülfüqarov; "7K" не переводится, это номер дома).
+STORE_ADDRESS_AZ = "İlqar Zülfüqarov küç., 7K"
 STORE_PHONE_E164 = f"+{WHATSAPP_NUMBER}"
 STORE_PHONE_DISPLAY = (
     f"+{WHATSAPP_NUMBER[:3]} {WHATSAPP_NUMBER[3:5]} {WHATSAPP_NUMBER[5:8]}"
@@ -40,7 +44,7 @@ STORE_DESCRIPTION = (
 )
 STORE_DESCRIPTION_AZ = (
     "Makiyaj Cosmetics — Bakıda koreya kosmetikası və makiyaj məhsulları. "
-    f"{STORE_ADDRESS}, Azi Aslanov metrosu yaxınlığında. Qiymətlər, WhatsApp"
+    f"{STORE_ADDRESS_AZ}, Azi Aslanov metrosu yaxınlığında. Qiymətlər, WhatsApp"
     " ilə sifariş."
 )
 
@@ -133,7 +137,7 @@ UI = {
       "brand_title": lambda name: f"{name} — Bakıda al, qiymətlər | {STORE_NAME}",
       "other_title": lambda name: f"{name} | {STORE_NAME}",
       "footer": lambda: (
-          f"{html.escape(STORE_NAME)} · Bakı, {html.escape(STORE_ADDRESS)}"
+          f"{html.escape(STORE_NAME)} · Bakı, {html.escape(STORE_ADDRESS_AZ)}"
           f" (Azi Aslanov metrosu yaxınlığında) · WhatsApp:"
           f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
           ' <a href="/llms.txt">Mətn formatında katalog</a> ·'
@@ -144,7 +148,7 @@ UI = {
       ),
       "home_intro": lambda n: (
           f"{html.escape(STORE_NAME)} — Bakıda kosmetika və gözəllik mağazası."
-          f" Ünvan: {html.escape(STORE_ADDRESS)}, Azi Aslanov metrosu"
+          f" Ünvan: {html.escape(STORE_ADDRESS_AZ)}, Azi Aslanov metrosu"
           " yaxınlığında (Xətai rayonu). "
           f"Anbarda {n} mal: koreya kosmetikası, makiyaj, dəri və saç qulluğu,"
           " ətriyyat. Qiymətlər manatla (AZN), qiymətlər və qalıqlar hər 6"
@@ -480,7 +484,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
       "telephone": STORE_PHONE_E164,
       "address": {
           "@type": "PostalAddress",
-          "streetAddress": STORE_ADDRESS,
+          "streetAddress": STORE_ADDRESS_AZ if lang == "az" else STORE_ADDRESS,
           "addressLocality": "Baku",
           "addressCountry": "AZ",
       },
