@@ -37,6 +37,17 @@ STORE_ADDRESS_AZ = "İlqar Zülfüqarov küç., 7K"
 # отдельно — обычный режим для такого магазина).
 STORE_HOURS_DISPLAY = "09:00–21:00"
 STORE_HOURS_SCHEMA = "Mo-Su 09:00-21:00"
+# "sameAs" для Schema.org Store — ссылки на другие подтверждённые профили
+# этого же магазина (Google Business, Instagram и т.п.), чтобы ИИ/поисковики
+# увереннее связывали их как один и тот же реальный субъект. Пока пусто —
+# ни один профиль ещё не заведён/не подтверждён; заполнить реальными
+# ссылками, как только они появятся (НЕ добавлять неподтверждённые).
+STORE_SAME_AS = []
+# Момент генерации текущего запуска — один и тот же для всех страниц одного
+# прогона (не пересчитывается на каждую страницу отдельно), показывается в
+# подвале каждой страницы: "регулярно обновляемые данные" — подтверждённо
+# значимый для AI-цитирования сигнал, раньше был виден только на /tseny/.
+GENERATION_TIMESTAMP = ""
 STORE_PHONE_E164 = f"+{WHATSAPP_NUMBER}"
 STORE_PHONE_DISPLAY = (
     f"+{WHATSAPP_NUMBER[:3]} {WHATSAPP_NUMBER[3:5]} {WHATSAPP_NUMBER[5:8]}"
@@ -85,6 +96,7 @@ UI = {
           f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
           ' <a href="/llms.txt">Каталог в текстовом виде</a> ·'
           f' <a href="/stores/{STORE_SLUG}/tseny/">Актуальные цены</a>'
+          f' · Обновлено: {GENERATION_TIMESTAMP}'
       ),
       "home_title": (
           f"{STORE_NAME} — косметика в Баку, м. Ази Асланов: каталог и цены"
@@ -116,6 +128,20 @@ UI = {
       "prices_col_range": "Цены, AZN",
       "prices_col_count": "Товаров",
       "prices_link_label": "Актуальные цены",
+      "home_faq_q1": f"Что такое {STORE_NAME}?",
+      "home_faq_a1": lambda n: (
+          f"{STORE_NAME} — магазин косметики и товаров для красоты в Баку, {n} товаров"
+          " в наличии: корейская косметика, макияж, уход за кожей и волосами,"
+          " парфюмерия."
+      ),
+      "home_faq_q2": f"Где находится {STORE_NAME}?",
+      "home_faq_a2": (
+          f"{STORE_ADDRESS}, рядом с метро Ази Асланов (Хатаинский район), Баку."
+      ),
+      "home_faq_q3": f"Как сделать заказ в {STORE_NAME}?",
+      "home_faq_a3": f"Через WhatsApp: {STORE_PHONE_DISPLAY}.",
+      "home_faq_q4": f"Какие часы работы у {STORE_NAME}?",
+      "home_faq_a4": f"{STORE_HOURS_DISPLAY}, ежедневно.",
   },
   "az": {
       "home_name": STORE_NAME,
@@ -146,6 +172,7 @@ UI = {
           f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
           ' <a href="/llms.txt">Mətn formatında katalog</a> ·'
           f' <a href="/stores/{STORE_SLUG}/az/tseny/">Cari qiymətlər</a>'
+          f' · Yenilənib: {GENERATION_TIMESTAMP}'
       ),
       "home_title": (
           f"{STORE_NAME} — Bakıda kosmetika, Azi Aslanov m.: kataloq və qiymətlər"
@@ -177,6 +204,19 @@ UI = {
       "prices_col_range": "Qiymət, AZN",
       "prices_col_count": "Mal sayı",
       "prices_link_label": "Cari qiymətlər",
+      "home_faq_q1": f"{STORE_NAME} nədir?",
+      "home_faq_a1": lambda n: (
+          f"{STORE_NAME} — Bakıda kosmetika və gözəllik mağazası, anbarda {n} mal:"
+          " koreya kosmetikası, makiyaj, dəri və saç qulluğu, ətriyyat."
+      ),
+      "home_faq_q2": f"{STORE_NAME} haradadır?",
+      "home_faq_a2": (
+          f"{STORE_ADDRESS_AZ}, Azi Aslanov metrosu yaxınlığında (Xətai rayonu), Bakı."
+      ),
+      "home_faq_q3": f"{STORE_NAME}-də necə sifariş vermək olar?",
+      "home_faq_a3": f"WhatsApp ilə: {STORE_PHONE_DISPLAY}.",
+      "home_faq_q4": f"{STORE_NAME}-nin iş saatları hansıdır?",
+      "home_faq_a4": f"{STORE_HOURS_DISPLAY}, hər gün.",
   },
 }
 
@@ -494,6 +534,8 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
           "addressCountry": "AZ",
       },
   }
+  if STORE_SAME_AS:
+    store_ld["sameAs"] = STORE_SAME_AS
   if offers:
     store_ld["makesOffer"] = offers
   crumb_ld = {
@@ -637,6 +679,40 @@ def faq_block(hub, lang, display_name):
   return faq_html, faq_ld
 
 
+def home_faq_block(lang, item_count):
+  """FAQ-блок для главной страницы: закрывает "около-брендовые" вопросы
+  (что это, где, как заказать, часы) — ровно тот тип вопроса, который уже
+  подтверждённо даёт цитирование (3-4 из 4 в трекере), только теперь ещё и
+  на самой часто обходимой краулерами странице сайта."""
+  strings = UI[lang]
+  qa = [
+      (strings["home_faq_q1"], strings["home_faq_a1"](item_count)),
+      (strings["home_faq_q2"], strings["home_faq_a2"]),
+      (strings["home_faq_q3"], strings["home_faq_a3"]),
+      (strings["home_faq_q4"], strings["home_faq_a4"]),
+  ]
+  faq_ld = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+          {
+              "@type": "Question", "name": q,
+              "acceptedAnswer": {"@type": "Answer", "text": a},
+          }
+          for q, a in qa
+      ],
+  }
+  items_html = "".join(
+      f'<div class="faq-item"><h3>{html.escape(q)}</h3><p>{html.escape(a)}</p></div>'
+      for q, a in qa
+  )
+  faq_html = (
+      f'<section class="faq"><h2>{html.escape(strings["faq_heading"])}</h2>'
+      f"{items_html}</section>"
+  )
+  return faq_html, faq_ld
+
+
 def lang_path(path, lang):
   """RU-путь /stores/<slug>/... -> AZ-путь /stores/<slug>/az/... (RU без изменений)."""
   if lang == "ru":
@@ -684,6 +760,8 @@ def hub_grid(heading, hubs, lang="ru", category_az=None):
 
 
 def run():
+  global GENERATION_TIMESTAMP
+  GENERATION_TIMESTAMP = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
   print("1. Скачивание данных из Google Таблицы...")
   try:
     req = urllib.request.Request(
@@ -975,7 +1053,7 @@ def run():
   # тип контента (оригинальные, обновляемые данные) чаще всего попадает в
   # ответы ИИ-ассистентов, а плотный список карточек товаров — плохо
   # извлекаемый фрагмент текста.
-  now_ts = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
+  now_ts = GENERATION_TIMESTAMP
   prices_alt_links = [
       ("ru", SITE_ROOT + f"/stores/{STORE_SLUG}/tseny/"),
       ("az", SITE_ROOT + f"/stores/{STORE_SLUG}/az/tseny/"),
@@ -1015,6 +1093,7 @@ def run():
           strings["more"], [h for h in hubs if h["kind"] == "prochee"],
           lang=lang, category_az=category_az,
       )
+    home_faq_html, home_faq_ld = home_faq_block(lang, len(items))
     home_html = render_page(
         title=strings["home_title"],
         description=strings["store_description"],
@@ -1025,6 +1104,8 @@ def run():
         breadcrumbs=[home_crumb[lang]],
         lang=lang,
         alt_links=home_alt_links,
+        faq_html=home_faq_html,
+        extra_ld=[home_faq_ld],
     )
     if lang == "ru":
       # Главная — canonical-адрес витрины, дублируется и в корень, и в папку
@@ -1118,12 +1199,18 @@ def run():
 
   # Только реальные страницы. "/" (редирект) и служебные файлы верификации
   # в sitemap не нужны — они лишь плодили "обнаружена, не проиндексирована".
-  sitemap_lines = "\n".join(f"  <url><loc>{u}</loc></url>" for u in sitemap_urls)
+  # lastmod — все страницы реально перегенерированы в этот самый прогон,
+  # так что честно ставить одну и ту же дату всем: это прямой сигнал
+  # краулерам "здесь всё свежее", а не просто список URL без контекста.
+  sitemap_date = datetime.datetime.now().strftime("%Y-%m-%d")
+  sitemap_lines = "\n".join(
+      f"  <url><loc>{u}</loc><lastmod>{sitemap_date}</lastmod></url>" for u in sitemap_urls
+  )
   sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 {sitemap_lines}
-  <url><loc>{SITE_ROOT}/stores/makiyaj/llms.txt</loc></url>
-  <url><loc>{SITE_ROOT}/llms.txt</loc></url>
+  <url><loc>{SITE_ROOT}/stores/makiyaj/llms.txt</loc><lastmod>{sitemap_date}</lastmod></url>
+  <url><loc>{SITE_ROOT}/llms.txt</loc><lastmod>{sitemap_date}</lastmod></url>
 </urlset>
 """
   with open("sitemap.xml", "w", encoding="utf-8", newline="\n") as f:
