@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+  <channel>
+    <title>Makiyaj Cosmetics — product feed (pilot, 3 items)</title>
+    <link>https://e-push-ai.vercel.app/stores/makiyaj/</link>
+    <description>Pilot product feed for GEO/commerce-feed testing. Only items with
+verified, legitimately-sourced manufacturer photos are included — see
+tools/build_feed_pilot.py for sourcing notes.</description>
+    <item>
+      <g:id>8806150614485</g:id>
+      <title>Missha Perfect Cover B.B. Cream SPF 42 NO.27, 50 мл</title>
+      <description>BB-крем Missha Perfect Cover SPF 42, оттенок NO.27, 50 мл. В наличии в Makiyaj Cosmetics, Баку.</description>
+      <link>https://e-push-ai.vercel.app/stores/makiyaj/kategoriya/bb-i-cc-krem/</link>
+      <g:image_link>https://e-push-ai.vercel.app/images/products/8806150614485.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>21.00 AZN</g:price>
+      <g:brand>Missha</g:brand>
+      <g:condition>new</g:condition>
+      <g:gtin>8806150614485</g:gtin>
+      <g:google_product_category>BB и CC крем</g:google_product_category>
+    </item>
+    <item>
+      <g:id>4005802324909</g:id>
+      <title>Nivea Бальзам для губ Strawberry</title>
+      <description>Бальзам для губ Nivea со вкусом клубники. В наличии в Makiyaj Cosmetics, Баку.</description>
+      <link>https://e-push-ai.vercel.app/stores/makiyaj/kategoriya/balzam-dlya-gub/</link>
+      <g:image_link>https://e-push-ai.vercel.app/images/products/4005802324909.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>5.50 AZN</g:price>
+      <g:brand>Nivea</g:brand>
+      <g:condition>new</g:condition>
+      <g:gtin>4005802324909</g:gtin>
+      <g:google_product_category>Бальзам для губ</g:google_product_category>
+    </item>
+    <item>
+      <g:id>3014260243531</g:id>
+      <title>Gillette Mach 3 — сменные кассеты, 4 шт.</title>
+      <description>Сменные кассеты для бритвы Gillette Mach 3, 4 штуки. В наличии в Makiyaj Cosmetics, Баку.</description>
+      <link>https://e-push-ai.vercel.app/stores/makiyaj/brend/gillette/</link>
+      <g:image_link>https://e-push-ai.vercel.app/images/products/3014260243531.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>21.00 AZN</g:price>
+      <g:brand>Gillette</g:brand>
+      <g:condition>new</g:condition>
+      <g:gtin>3014260243531</g:gtin>
+      <g:google_product_category>Сменные кассеты для бритья</g:google_product_category>
+    </item>
+  </channel>
+</rss>
