@@ -87,6 +87,9 @@ UI = {
       "baku": "Баку",
       "store_phrase": f"Магазин {STORE_NAME}",
       "cat_title": lambda name: f"{name} — цены в Баку | {STORE_NAME}",
+      "product_title": lambda name: f"{name} — купить в Баку, цена | {STORE_NAME}",
+      "product_in_stock": "В наличии",
+      "product_price_label": lambda price: f"Цена: {price}. ",
       "cat_h1": lambda name: f"{name}: цены и наличие в Баку",
       "brand_title": lambda name: f"{name} — купить в Баку, цены | {STORE_NAME}",
       "other_title": lambda name: f"{name} | {STORE_NAME}",
@@ -163,6 +166,9 @@ UI = {
       "baku": "Bakı",
       "store_phrase": f"{STORE_NAME} mağazası",
       "cat_title": lambda name: f"{name} — Bakıda qiymətlər | {STORE_NAME}",
+      "product_title": lambda name: f"{name} — Bakıda al, qiymət | {STORE_NAME}",
+      "product_in_stock": "Anbarda var",
+      "product_price_label": lambda price: f"Qiymət: {price}. ",
       "cat_h1": lambda name: f"{name}: Bakıda qiymət və mövcudluq",
       "brand_title": lambda name: f"{name} — Bakıda al, qiymətlər | {STORE_NAME}",
       "other_title": lambda name: f"{name} | {STORE_NAME}",
@@ -413,6 +419,7 @@ h2 { max-width: 1200px; margin: 28px auto 10px; font-size: 18px; color: #222; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
 .card { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .title { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #222; line-height: 1.3; }
+a.title { text-decoration: none; display: block; }
 .price { font-size: 16px; font-weight: bold; color: #0d7a5f; margin-bottom: 12px; }
 .btn { text-align: center; background: #25D366; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 13px; transition: background 0.2s; }
 .btn:hover { background: #1eb857; }
@@ -865,8 +872,24 @@ def run():
   )
 
   llms_all_lines = []
+  used_product_slugs = set()
   for n, i in enumerate(items):
     i["idx"] = n
+    # Отдельная страница на каждый товар (не только карточка внутри хаба
+    # категории/бренда) — без неё у конкретного SKU нет своего URL, который
+    # можно процитировать как самостоятельный, извлекаемый кусок факта
+    # (название + объём + цена), а именно такие страницы реально выигрывают
+    # generic-запросы у конкурентов (см. tools/geo_tracker round 3, 2026-10-01).
+    # Если название уже начинается с бренда (обычный случай), не дублируем
+    # бренд в slug второй раз (иначе получалось "3w-clinic-3w-clinic-...").
+    has_brand_prefix = i["brand"] and i["display"].lower().startswith(i["brand"].lower())
+    base_slug = slugify(
+        i["display"] if not i["brand"] or has_brand_prefix
+        else f"{i['brand']} {i['display']}"
+    )
+    i["product_slug"] = unique_slug(base_slug, used_product_slugs)
+    i["product_path"] = f"/stores/{STORE_SLUG}/tovar/{i['product_slug']}/"
+
     wa_msg = urllib.parse.quote(f"Salam! Makiyaj almaq istəyirəm: {i['title']}")
     real_wa_link = f"https://wa.me/{WHATSAPP_NUMBER}?text={wa_msg}"
     # Отдаём ссылку на свой трекинг-редирект вместо прямой wa.me, чтобы считать
@@ -875,16 +898,19 @@ def run():
         f"{SITE_ROOT}/api/go?to={urllib.parse.quote(real_wa_link, safe='')}"
         f"&t={urllib.parse.quote(i['title'])}"
     )
+    i["wa_link"] = wa_link
+    product_url_ru = SITE_ROOT + i["product_path"]
+    product_url_az = SITE_ROOT + lang_path(i["product_path"], "az")
 
     i["card"] = f"""
         <div class="card">
-            <div class="title">{html.escape(i['display'])}</div>
+            <a class="title" href="{product_url_ru}">{html.escape(i['display'])}</a>
             <div class="price">{i['price']}</div>
             <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
         </div>"""
     i["card_az"] = f"""
         <div class="card">
-            <div class="title">{html.escape(i['display_az'])}</div>
+            <a class="title" href="{product_url_az}">{html.escape(i['display_az'])}</a>
             <div class="price">{i['price']}</div>
             <a href="{wa_link}" target="_blank" class="btn">WhatsApp Sifariş</a>
         </div>"""
@@ -976,6 +1002,15 @@ def run():
       return category_az.get(hub["name"], hub["name"])
     return hub["name"]
 
+  # Родитель для хлебных крошек на странице товара: категория приоритетнее
+  # бренда (порядок hubs = category_hubs + brand_hubs + "Прочее"), у каждого
+  # товара гарантированно есть ровно один родитель — "Прочее" покрывает всех,
+  # кто не попал ни в одну категорию/бренд.
+  idx_to_hub = {}
+  for hub in hubs:
+    for it in hub["items"]:
+      idx_to_hub.setdefault(it["idx"], hub)
+
   az_home_url = SITE_ROOT + lang_path(f"/stores/{STORE_SLUG}/", "az")
   sitemap_urls = [STORE_CANONICAL_URL, az_home_url]
   home_crumb = {
@@ -1046,6 +1081,67 @@ def run():
         with open(os.path.join(hub_dir, filename), "w", encoding="utf-8", newline="\n") as f:
           f.write(page_html)
         sitemap_urls.append(canonical)
+
+  # 2. Персональная страница на каждый товар: один URL = одно название +
+  # объём + цена + магазин — самостоятельный, извлекаемый кусок факта, а не
+  # карточка внутри общей страницы категории на 50+ товаров. Это то, чем
+  # реально выигрывают конкуренты в ИИ-ответах на generic-запросы (Wolt,
+  # Rossmann, Bazarstore — у каждого SKU своя страница), см. tools/geo_tracker
+  # round 3 (2026-10-01).
+  product_dir_base = os.path.join(store_dir, "tovar")
+  shutil.rmtree(product_dir_base, ignore_errors=True)
+  shutil.rmtree(os.path.join(store_dir, "az", "tovar"), ignore_errors=True)
+  for i in items:
+    parent_hub = idx_to_hub[i["idx"]]
+    for lang in ("ru", "az"):
+      strings = UI[lang]
+      display_key = "display" if lang == "ru" else "display_az"
+      offer_key = "offer" if lang == "ru" else "offer_az"
+      name = i[display_key]
+      parent_name = hub_display_name(parent_hub, lang)
+      parent_path = SITE_ROOT + lang_path(parent_hub["path"], lang)
+      product_path = lang_path(i["product_path"], lang)
+      canonical = SITE_ROOT + product_path
+      alt_links = [
+          ("ru", SITE_ROOT + lang_path(i["product_path"], "ru")),
+          ("az", SITE_ROOT + lang_path(i["product_path"], "az")),
+      ]
+      plain = (
+          f"{strings['product_in_stock']}. {strings['product_price_label'](i['price'])}"
+          f"{strings['store_phrase']}, {strings['baku']}, {strings['near_metro']}. "
+          f"{strings['order_via']}: {STORE_PHONE_DISPLAY}."
+      )
+      intro_html = (
+          f"{html.escape(plain.rsplit(' ' + strings['order_via'], 1)[0])} "
+          f'{strings["order_via"]}: <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a>.'
+      )
+      main_html = (
+          '<div class="card">'
+          f'<div class="price">{html.escape(i["price"])}</div>'
+          f'<a href="{i["wa_link"]}" target="_blank" class="btn">{strings["order_via"]}</a>'
+          "</div>"
+      )
+      page_html = render_page(
+          title=strings["product_title"](name),
+          description=_shorten(plain),
+          canonical=canonical,
+          h1=name,
+          intro_html=intro_html,
+          main_html=main_html,
+          breadcrumbs=[home_crumb[lang], (parent_name, parent_path), (name, canonical)],
+          offers=[i[offer_key]],
+          lang=lang,
+          alt_links=alt_links,
+      )
+      product_dir = (
+          os.path.join(store_dir, "tovar", i["product_slug"]) if lang == "ru"
+          else os.path.join(store_dir, "az", "tovar", i["product_slug"])
+      )
+      os.makedirs(product_dir, exist_ok=True)
+      with open(os.path.join(product_dir, "index.html"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(page_html)
+      sitemap_urls.append(canonical)
+  print(f"Страниц товаров: {len(items)} x 2 языка = {len(items) * 2}")
 
   # Инструмент 1: отдельная страница "живых цен" по всем категориям — не
   # спрятанное предложение внутри карточек товара, а самостоятельный,
