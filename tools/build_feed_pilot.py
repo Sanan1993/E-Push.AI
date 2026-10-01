@@ -23,17 +23,9 @@ STORE_NAME = "Makiyaj Cosmetics"
 # Вручную собранные реальные данные (barcode, name, brand, category, price,
 # availability page, image file) — три позиции, прошедшие проверку фото.
 ITEMS = [
-    {
-        "gtin": "8806150614485",
-        "title": "Missha Perfect Cover B.B. Cream SPF 42 NO.27, 50 мл",
-        "description": "BB-крем Missha Perfect Cover SPF 42, оттенок NO.27, 50 мл. "
-                        "В наличии в Makiyaj Cosmetics, Баку.",
-        "brand": "Missha",
-        "category": "BB и CC крем",
-        "price": 21.0,
-        "link": f"{SITE_ROOT}/stores/makiyaj/kategoriya/bb-i-cc-krem/",
-        "image": "8806150614485.jpg",
-    },
+    # Missha сняли 2026-10-01: на их же официальном сайте нет чистого фото
+    # товара — только рекламные баннеры/сравнение старого и нового дизайна
+    # тюбика, и непонятно, какой из двух дизайнов реально продаёт магазин.
     {
         "gtin": "4005802324909",
         "title": "Nivea Бальзам для губ Strawberry",
