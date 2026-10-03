@@ -1,19 +1,52 @@
-id,lang,type,question
-1,ru,generic,где купить корейскую косметику в Баку недорого
-2,ru,location,магазин косметики возле метро Ази Асланов в Баку
-3,ru,branded,Makiyaj Cosmetics Баку каталог цены
-4,ru,generic,где купить тушь для ресниц в Баку
-5,ru,generic,купить краску для волос Garnier в Баку цена
-6,ru,generic,интернет-магазин косметики в Баку с доставкой через WhatsApp
-7,ru,generic,тональный крем купить в Баку недорого
-8,ru,generic,купить помаду в Баку
-9,az,generic,Bakıda kosmetika mağazası harada ucuz
-10,en,generic,best cheap makeup and cosmetics store in Baku Azerbaijan
-11,ru,generic,купить шампунь недорого в Баку
-12,ru,generic,где купить косметику Anua в Баку
-13,ru,location,магазин парфюмерии в Хатаинском районе Баку
-14,ru,generic,детская косметика купить в Баку
-15,ru,branded,где находится магазин Makiyaj в Баку какой адрес
-16,ru,generic,где купить средства против прыщей и акне в Баку
-17,ru,generic,сколько стоит увлажняющий крем для лица в Баку
-18,az,branded,Makiyaj Cosmetics haradadır ünvanı nədir
+id,lang,type,level,question,followup
+1,ru,generic,L4,где купить корейскую косметику в Баку недорого,
+2,ru,location,L5,магазин косметики возле метро Ази Асланов в Баку,
+3,ru,branded,L5,Makiyaj Cosmetics Баку каталог цены,
+4,ru,generic,L4,где купить тушь для ресниц в Баку,
+5,ru,generic,L2,купить краску для волос Garnier в Баку цена,
+6,ru,generic,L4,интернет-магазин косметики в Баку с доставкой через WhatsApp,
+7,ru,generic,L4,тональный крем купить в Баку недорого,
+8,ru,generic,L4,купить помаду в Баку,
+9,az,generic,L4,Bakıda kosmetika mağazası harada ucuz,
+10,en,generic,L4,best cheap makeup and cosmetics store in Baku Azerbaijan,
+11,ru,generic,L4,купить шампунь недорого в Баку,
+12,ru,generic,L2,где купить косметику Anua в Баку,
+13,ru,location,L5,магазин парфюмерии в Хатаинском районе Баку,
+14,ru,generic,L4,детская косметика купить в Баку,
+15,ru,branded,L5,где находится магазин Makiyaj в Баку какой адрес,
+16,ru,generic,L3,где купить средства против прыщей и акне в Баку,
+17,ru,generic,L4,сколько стоит увлажняющий крем для лица в Баку,
+18,az,branded,L5,Makiyaj Cosmetics haradadır ünvanı nədir,
+19,ru,generic,L2,краска для волос Ollin купить в Баку,
+20,ru,generic,L2,помада Relouis купить в Баку,
+21,ru,generic,L2,лак для ногтей Golden Rose Баку,
+22,ru,generic,L2,колготки Conte купить в Баку,
+23,ru,generic,L2,духи Lattafa купить в Баку,
+24,ru,generic,L2,краска для волос L'Oreal Paris Баку цена,
+25,ru,generic,L2,тональный крем Topface купить в Баку,
+26,ru,generic,L2,тушь Maybelline купить в Баку,
+27,ru,generic,L2,лак для ногтей Pastel Баку,
+28,ru,generic,L2,шампунь Ollin Professional Баку,
+29,az,generic,L2,Golden Rose dodaq boyası Bakıda al,
+30,ru,generic,L2,крем для лица Jigott Баку,
+31,ru,generic,L3,чем закрасить седину дома недорого какую краску купить в Баку,"до 10 манат, цвет русый, подбери конкретные варианты и дай ссылки где купить"
+32,ru,generic,L3,средство от выпадения волос в Баку купить,"для женщин, бюджет до 25 манат, подбери конкретные средства и дай ссылки"
+33,ru,generic,L3,крем для сухой кожи лица недорого Баку,"кожа сухая, бюджет до 20 манат, подбери конкретные кремы и дай ссылки где купить"
+34,ru,generic,L3,солнцезащитный крем SPF 50 для лица купить в Баку,
+35,ru,generic,L3,подарок девушке косметика или духи до 50 манат Баку,
+36,ru,generic,L3,плотные колготки на осень и зиму купить в Баку,
+37,ru,generic,L3,чем снять макияж мицеллярная вода недорого Баку,
+38,ru,generic,L3,что купить для ухода за кожей новичку корейская косметика Баку,
+39,ru,generic,L3,стойкая помада которая не сушит губы Баку,"оттенок нюд, бюджет до 15 манат, подбери конкретные помады и дай ссылки"
+40,az,generic,L3,yağlı dəri üçün krem Bakıda hansı almaq olar,
+41,ru,generic,L4,купить краску для волос в Баку,"оттенок русый, до 10 манат, подбери конкретные краски и дай ссылки где купить"
+42,ru,generic,L4,колготки купить в Баку,
+43,ru,generic,L4,купить лак для ногтей в Баку,
+44,ru,generic,L4,духи женские купить в Баку недорого,"до 40 манат, цветочный аромат, подбери конкретные духи и дай ссылки"
+45,ru,generic,L4,купить блеск для губ в Баку,
+46,ru,generic,L4,румяна купить в Баку,
+47,az,generic,L4,Bakıda saç boyası harada almaq olar,
+48,en,generic,L4,buy hair dye in Baku,
+49,ru,generic,L1,Compliment гель для умывания с салициловой кислотой 200 мл цена Баку,
+50,ru,generic,L1,Gliss Kur Express кондиционер Oil Nutritive 200 мл цена Баку,
+51,ru,generic,L1,Luxvisage Lip Tint 01 тинт для губ цена Баку,

@@ -71,3 +71,42 @@ round_date,question_id,engine,cited,info_correct,notes
 2026-10-03,16,chatgpt,no,,аптеки PharmaStore AVIS Medical City + Skin Store Kutanoz
 2026-10-03,17,chatgpt,no,,цены Olivia Rossmann Wolt
 2026-10-03,18,chatgpt,yes,yes,az верный адрес 7K источник Sosial Tərəfdaş сам отметил Yandex (дом 9)
+2026-10-03-L,19,chatgpt,no,,Olivia (28 товаров Ollin но краски нет) и салоны; у нас 88 красок Ollin - поле тонкое
+2026-10-03-L,20,chatgpt,no,,Kosmetika.Az; Bahar и Gunay через Wolt; Real Beauty (realbeauty.az - малый домен с SKU и ценой)
+2026-10-03-L,21,chatgpt,no,,фирменные точки Golden Rose; Bahar (Wolt) и Olivia с номерами оттенков
+2026-10-03-L,22,chatgpt,no,,ChatGPT не нашёл НИ ОДНОГО магазина Conte в Баку; у нас 192 SKU Conte - пустое поле
+2026-10-03-L,23,chatgpt,no,,Daraq (79 позиций Lattafa); парфюмерные магазины через Wolt
+2026-10-03-L,24,chatgpt,no,,Olivia; Rossmann; Bravo; Kontakt
+2026-10-03-L,25,chatgpt,no,,BODYCARE (свой сайт: оттенки+цены); Beautech через Wolt
+2026-10-03-L,26,chatgpt,no,,Olivia; BODYCARE; Beautech; Daraq
+2026-10-03-L,27,chatgpt,no,,Rossmann (один оттенок); BODYCARE; у нас 87 лаков Pastel - поле тонкое
+2026-10-03-L,28,chatgpt,no,,Real Beauty; Olivia
+2026-10-03-L,29,chatgpt,no,,фирменные точки Golden Rose; Olivia
+2026-10-03-L,30,chatgpt,no,,Olivia; Rossmann
+2026-10-03-L,31,chatgpt,no,,Garnier из Olivia
+2026-10-03-L,31f,chatgpt,no,,ссылки на карточки SKU: Olivia; Bazarstore; Bravo; Kontakt; Wolt Market - оттенок+цена+ссылка
+2026-10-03-L,32,chatgpt,no,,аптеки: миноксидил - не наша ниша
+2026-10-03-L,32f,chatgpt,no,,Medical City; Limon Aptek; D3 Aptek через Wolt
+2026-10-03-L,33,chatgpt,no,,Rossmann; Aloe Aptek
+2026-10-03-L,33f,chatgpt,no,,Rossmann: 5 кремов со ссылками
+2026-10-03-L,34,chatgpt,no,,Wolt; BODYCARE; PharmaStore
+2026-10-03-L,35,chatgpt,no,,Dreamscent; Yves Rocher; Olivia
+2026-10-03-L,36,chatgpt,no,,Next; Яндекс Маркет; магазинов колготок в Баку почти не нашёл; у нас 504 колготок
+2026-10-03-L,37,chatgpt,no,,Aloe Aptek; Olivia; Kontakt
+2026-10-03-L,38,chatgpt,no,,Beauty Is You; Koreiko; BODYCARE; Namu
+2026-10-03-L,39,chatgpt,no,,Maybelline Vinyl Ink (Daraq; Olivia)
+2026-10-03-L,39f,chatgpt,no,,Olivia: Golden Rose Soft&Matte 102-104 со ссылками; Bahar (Wolt)
+2026-10-03-L,40,chatgpt,no,,Aptek Online; Aloe (CeraVe; Bioderma)
+2026-10-03-L,41,chatgpt,no,,Rossmann; Tamstore; Bravo
+2026-10-03-L,41f,chatgpt,no,,Rossmann: Garnier 7 и 7.1 со ссылками
+2026-10-03-L,42,chatgpt,no,,Bahar (Golden Lady); Calzedonia; Next; alinino.az (SISI) - малый домен
+2026-10-03-L,43,chatgpt,no,,Rossmann; Flormar; Olivia
+2026-10-03-L,44,chatgpt,no,,Olivia; Parfum City
+2026-10-03-L,44f,chatgpt,no,,Rossmann: La Rive; J.Arthes; Elode со ссылками
+2026-10-03-L,45,chatgpt,no,,Rossmann; Olivia; Bahar
+2026-10-03-L,46,chatgpt,no,,Bahar (Astra); Sabina
+2026-10-03-L,47,chatgpt,no,,Kepro; Artego; Bahar; Bravo
+2026-10-03-L,48,chatgpt,no,,Rossmann; Kepro; Impala; Bravo
+2026-10-03-L,49,chatgpt,no,,цену в Баку подтвердить не смог; взял Яндекс Маркет и l.arzumbeauty.com
+2026-10-03-L,50,chatgpt,no,,мелкие магазины Araz Market; Sev-Al; Home Market с карточкой SKU и ценой
+2026-10-03-L,51,chatgpt,no,,Olivia; Kontakt; Nariva через Wolt
