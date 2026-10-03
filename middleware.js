@@ -8,7 +8,8 @@ const BOT_PATTERNS = [
   /ClaudeBot/i, /Claude-User/i, /anthropic-ai/i,
   /Google-Extended/i, /Googlebot/i, /GoogleOther/i,
   /Bingbot/i, /CCBot/i, /Applebot/i, /YandexBot/i,
-  /facebookexternalhit/i, /DuckDuckBot/i, /Bytespider/i, /cohere-ai/i,
+  /facebookexternalhit/i, /DuckDuckBot/i, /DuckAssistBot/i, /ExaSearchBot/i,
+  /Bytespider/i, /cohere-ai/i,
 ];
 
 // НЕ полная/официальная база облачных диапазонов (такой бесплатно и без
@@ -25,6 +26,10 @@ const DATACENTER_IP_PREFIXES = [
   '138.68.', '159.65.', '164.90.', '167.71.', '178.62.', // DigitalOcean
   '5.9.', '78.46.', '88.99.', '94.130.', '116.202.', '135.181.', // Hetzner
   '51.68.', '54.36.', '137.74.', '141.94.', '145.239.', '151.80.', // OVH
+  // Google-owned 172.253.0.0/16 (по goog.json, но не в cloud.json и не в
+  // списках краулеров): 03.10.2026 пришёл Chrome/Windows из Charleston без
+  // реферера и был ошибочно записан как visit-real.
+  '172.253.',
 ];
 
 function isDatacenterIp(ip) {
