@@ -78,7 +78,9 @@ UI = {
       "forward": "Вперёд &rarr;",
       "page": "Страница",
       "in_stock": "Товаров в наличии",
-      "prices_from": lambda lo, hi: f"Цены от {lo} до {hi} AZN. ",
+      "prices_from": lambda lo, hi: (
+          f"Цены от {lo} до {hi} AZN. " if lo != hi else f"Цена {lo} AZN. "
+      ),
       "brands_label": lambda names: f"Бренды: {names}. ",
       "categories_label": lambda names: f"Категории: {names}. ",
       "updated": "Цены и остатки обновляются каждые 6 часов. ",
@@ -92,14 +94,19 @@ UI = {
       "product_price_label": lambda price: f"Цена: {price}. ",
       "cat_h1": lambda name: f"{name}: цены и наличие в Баку",
       "brand_title": lambda name: f"{name} — купить в Баку, цены | {STORE_NAME}",
+      "podborka_examples": lambda names, more: (
+          "Модели и оттенки: " + "; ".join(names) + (f" и ещё {more}" if more else "") + ". "
+      ),
+      "podborka_alt": lambda alt: f"Также ищут: {alt}. ",
+      "podborki_heading": "Подборки",
       "other_title": lambda name: f"{name} | {STORE_NAME}",
-      "footer": lambda: (
+      "footer": lambda stamp=True: (
           f"{html.escape(STORE_NAME)} · Баку, {html.escape(STORE_ADDRESS)}"
           f" (рядом с метро Ази Асланов) · WhatsApp:"
           f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
           ' <a href="/llms.txt">Каталог в текстовом виде</a> ·'
           f' <a href="/stores/{STORE_SLUG}/tseny/">Актуальные цены</a>'
-          f' · Обновлено: {GENERATION_TIMESTAMP}'
+          + (f' · Обновлено: {GENERATION_TIMESTAMP}' if stamp else '')
       ),
       "home_title": (
           f"{STORE_NAME} — косметика в Баку, м. Ази Асланов: каталог и цены"
@@ -157,7 +164,9 @@ UI = {
       "forward": "İrəli &rarr;",
       "page": "Səhifə",
       "in_stock": "Anbarda olan mallar",
-      "prices_from": lambda lo, hi: f"Qiymətlər {lo}-dan {hi} AZN-ə qədər. ",
+      "prices_from": lambda lo, hi: (
+          f"Qiymətlər {lo}-dan {hi} AZN-ə qədər. " if lo != hi else f"Qiymət {lo} AZN. "
+      ),
       "brands_label": lambda names: f"Brendlər: {names}. ",
       "categories_label": lambda names: f"Kateqoriyalar: {names}. ",
       "updated": "Qiymətlər və qalıqlar hər 6 saatdan bir yenilənir. ",
@@ -171,14 +180,19 @@ UI = {
       "product_price_label": lambda price: f"Qiymət: {price}. ",
       "cat_h1": lambda name: f"{name}: Bakıda qiymət və mövcudluq",
       "brand_title": lambda name: f"{name} — Bakıda al, qiymətlər | {STORE_NAME}",
+      "podborka_examples": lambda names, more: (
+          "Modellər və çalarlar: " + "; ".join(names) + (f" və daha {more}" if more else "") + ". "
+      ),
+      "podborka_alt": lambda alt: "",
+      "podborki_heading": "Seçimlər",
       "other_title": lambda name: f"{name} | {STORE_NAME}",
-      "footer": lambda: (
+      "footer": lambda stamp=True: (
           f"{html.escape(STORE_NAME)} · Bakı, {html.escape(STORE_ADDRESS_AZ)}"
           f" (Azi Aslanov metrosu yaxınlığında) · WhatsApp:"
           f' <a href="tel:{STORE_PHONE_E164}">{STORE_PHONE_DISPLAY}</a> ·'
           ' <a href="/llms.txt">Mətn formatında katalog</a> ·'
           f' <a href="/stores/{STORE_SLUG}/az/tseny/">Cari qiymətlər</a>'
-          f' · Yenilənib: {GENERATION_TIMESTAMP}'
+          + (f' · Yenilənib: {GENERATION_TIMESTAMP}' if stamp else '')
       ),
       "home_title": (
           f"{STORE_NAME} — Bakıda kosmetika, Azi Aslanov m.: kataloq və qiymətlər"
@@ -401,6 +415,27 @@ _RU_LAT = {
 # (мелкие уходят в общую страницу "Прочие товары", иначе получаются тонкие
 # страницы, которые Google не любит индексировать).
 HUB_MIN_ITEMS = 10
+
+# Подборки "бренд × тип" и "колготки N DEN": точное совпадение с запросами
+# уровня "бренд + тип" ("краска для волос Ollin Баку") — отдельная страница
+# со списком моделей/оттенков и ценами, а не только общий хаб бренда.
+PODBORKA_MIN_ITEMS = 10
+PODBORKA_EXAMPLES = 12
+DEN_RE = re.compile(r"(\d{1,3})\s*(?:den|daino|денье)", re.IGNORECASE)
+# Как покупатели пишут эти бренды кириллицей (ключ — _letters_only(бренд)).
+BRAND_CYR_RU = {
+    "conte": "Конте", "goldenrose": "Голден Роуз", "relouis": "Релуи",
+    "pastel": "Пастель", "ollinprofessional": "Оллин Профессионал",
+    "lattafaperfumes": "Латтафа", "garnier": "Гарнье",
+    "lorealparis": "Лореаль Париж", "maybellinenewyork": "Мейбеллин",
+    "topface": "Топфейс", "luxvisage": "Люкс Визаж",
+    "evelinecosmetics": "Эвелин", "flormar": "Фломар",
+    "compliment": "Комплимент", "nivea": "Нивея", "bioderma": "Биодерма",
+    "goldenlady": "Голден Леди", "viviennesabo": "Вивьен Сабо",
+    "innamore": "Иннаморе", "incanto": "Инканто", "rexona": "Рексона",
+    "dove": "Дав", "gillette": "Жиллет", "catrice": "Катрис",
+    "estelprofessional": "Эстель Профессионал", "lakme": "Лакме",
+}
 HUB_PAGE_SIZE = 100
 MIN_SANE_PRICE_AZN = 0.5
 
@@ -527,7 +562,9 @@ def pagination_html(base_path, page_num, total_pages, lang="ru"):
 
 def render_page(title, description, canonical, h1, intro_html, main_html,
                 breadcrumbs, offers=None, pagination="", lang="ru", alt_links=None,
-                faq_html="", extra_ld=None):
+                faq_html="", extra_ld=None, stamp=True):
+  # stamp=False у страниц товаров: метка времени в подвале меняла бы все
+  # ~18,6 тыс. файлов при каждом прогоне и раздувала авто-коммиты cron.
   store_ld = {
       "@context": "https://schema.org",
       "@type": "Store",
@@ -590,7 +627,7 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
     {main_html}
     {pagination}
     {faq_html}
-    <footer>{UI[lang]["footer"]()}</footer>
+    <footer>{UI[lang]["footer"](stamp)}</footer>
 </body>
 </html>"""
 
@@ -621,6 +658,21 @@ def hub_texts(hub, lang="ru", category_az=None, display_name=None):
     extra = strings["categories_label"](", ".join(c for c, _ in cats)) if cats else ""
     title = strings["brand_title"](name)
     h1 = strings["cat_h1"](name)
+  elif hub["kind"] == "podborka":
+    # Размеры и цвета одной модели ("Conte Active 20 DEN 2 S Mocca", "... 3 M
+    # Natural") схлопываем по первым четырём словам, чтобы список показывал
+    # разные модели/оттенки, а не 12 вариантов одного товара.
+    models = {}
+    for i in group:
+      short = (i["display_az"] if lang == "az" else i["display"]).split(" — ")[0]
+      models.setdefault(" ".join(short.split()[:4]).lower(), short)
+    short_names = list(models.values())
+    shown = short_names[:PODBORKA_EXAMPLES]
+    extra = strings["podborka_examples"](shown, len(short_names) - len(shown))
+    if hub.get("alt_name"):
+      extra = strings["podborka_alt"](hub["alt_name"]) + extra
+    title = strings["brand_title"](name)
+    h1 = strings["cat_h1"](name)
   else:
     extra = strings["other_desc"]
     title = strings["other_title"](name)
@@ -647,7 +699,7 @@ def faq_block(hub, lang, display_name):
   исследованиям именно такие явные вопрос-ответ фрагменты чаще попадают в
   ответы ИИ-ассистентов, чем тот же факт внутри сплошного текста.
   """
-  if hub["kind"] not in ("kategoriya", "brend"):
+  if hub["kind"] not in ("kategoriya", "brend", "podborka"):
     return "", None
   strings = UI[lang]
   group = hub["items"]
@@ -659,7 +711,10 @@ def faq_block(hub, lang, display_name):
   name = display_name
   # В вопросах категория идёт строчными буквами ("недорого купить тушь..."),
   # как и в build_display_title; название бренда регистр не меняет.
-  name_lc = (name[:1].lower() + name[1:]) if hub["kind"] == "kategoriya" else name
+  if hub["kind"] == "podborka":
+    name_lc = hub["name_lc_az"] if lang == "az" else hub["name_lc"]
+  else:
+    name_lc = (name[:1].lower() + name[1:]) if hub["kind"] == "kategoriya" else name
 
   q1 = strings["faq_cheap_q"](name_lc)
   a1 = strings["faq_cheap_a"](name, len(group), price_txt)
@@ -756,6 +811,8 @@ def hub_grid(heading, hubs, lang="ru", category_az=None):
   def name_of(h):
     if lang == "az" and h["kind"] == "kategoriya":
       return (category_az or {}).get(h["name"], h["name"])
+    if lang == "az" and h["kind"] == "podborka":
+      return h["name_az"]
     return h["name"]
 
   links = "".join(
@@ -949,7 +1006,7 @@ def run():
   for old_file in os.listdir(store_dir):
     if re.fullmatch(r"page-\d+\.html", old_file):
       os.remove(os.path.join(store_dir, old_file))  # старые плоские страницы
-  for sub in ("kategoriya", "brend", "prochee", "az"):
+  for sub in ("kategoriya", "brend", "prochee", "podborka", "az"):
     shutil.rmtree(os.path.join(store_dir, sub), ignore_errors=True)
 
   by_category = collections.defaultdict(list)
@@ -995,7 +1052,76 @@ def run():
       f" | в 'Прочее': {len(leftovers)}"
   )
 
+  # Подборки: "бренд × тип" (например "Краска для волос Ollin Professional")
+  # и "Колготки N DEN". Добавляются в hubs после "Прочего", поэтому на
+  # родителя товара в хлебных крошках (idx_to_hub, setdefault) не влияют.
+  def _lc_first(text):
+    return text[:1].lower() + text[1:]
+
+  brand_hub_by_key = {_letters_only(h["name"]): h for h in brand_hubs}
+  category_hub_by_name = {h["name"]: h for h in category_hubs}
+  podborki, related = [], collections.defaultdict(list)
+  used_podborka = set()
+
+  def add_podborka(name_ru, name_az, name_lc, name_lc_az, group, parents, alt_name=""):
+    slug = unique_slug(slugify(name_ru), used_podborka)
+    p = {
+        "kind": "podborka", "name": name_ru, "name_az": name_az,
+        "name_lc": name_lc, "name_lc_az": name_lc_az, "slug": slug,
+        "alt_name": alt_name,
+        "items": sorted(group, key=lambda x: x["display"].lower()),
+        "path": f"/stores/{STORE_SLUG}/podborka/{slug}/",
+        "parent": parents[0],
+    }
+    podborki.append(p)
+    for parent in parents:
+      related[(parent["kind"], parent["slug"])].append(p)
+
+  pair_groups = collections.defaultdict(list)
+  for i in items:
+    if i["brand"] and i["category"]:
+      pair_groups[(_letters_only(i["brand"]), i["category"])].append(i)
+  for (bkey, cat), group in sorted(pair_groups.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+    bhub, chub = brand_hub_by_key.get(bkey), category_hub_by_name.get(cat)
+    if len(group) < PODBORKA_MIN_ITEMS or not bhub or not chub:
+      continue
+    # Если пара покрывает весь бренд или всю категорию — это дубль уже
+    # существующего хаба, отдельная страница ничего не добавит.
+    if len(group) >= len(bhub["items"]) or len(group) >= len(chub["items"]):
+      continue
+    cat_ru = "Колготки" if cat == "Колготки и чулки" else cat
+    cat_az_name = category_az.get(cat, cat)
+    brand_name = bhub["name"]
+    add_podborka(
+        f"{cat_ru} {brand_name}", f"{brand_name} {_lc_first(cat_az_name)}",
+        f"{_lc_first(cat_ru)} {brand_name}", f"{brand_name} {_lc_first(cat_az_name)}",
+        group, [bhub, chub], alt_name=BRAND_CYR_RU.get(bkey, ""),
+    )
+
+  tights_hub = category_hub_by_name.get("Колготки и чулки")
+  if tights_hub:
+    den_groups = collections.defaultdict(list)
+    for i in tights_hub["items"]:
+      m = DEN_RE.search(i["display"])
+      if m:
+        den_groups[int(m.group(1))].append(i)
+    tights_az = category_az.get("Колготки и чулки", "Колготки и чулки")
+    for den, group in sorted(den_groups.items()):
+      if len(group) < PODBORKA_MIN_ITEMS:
+        continue
+      add_podborka(
+          f"Колготки {den} DEN", f"{tights_az} {den} DEN",
+          f"колготки {den} DEN", f"{_lc_first(tights_az)} {den} DEN",
+          group, [tights_hub],
+      )
+  for lst in related.values():
+    lst.sort(key=lambda p: (-len(p["items"]), p["name"].lower()))
+  hubs = hubs + podborki
+  print(f"Подборок: {len(podborki)}")
+
   def hub_display_name(hub, lang):
+    if hub["kind"] == "podborka":
+      return hub["name_az"] if lang == "az" else hub["name"]
     if hub["kind"] == "prochee":
       return UI[lang]["other_goods"]
     if hub["kind"] == "kategoriya" and lang == "az":
@@ -1059,6 +1185,15 @@ def run():
         # FAQ-блок только на первой странице хаба (не на page-2/3...) — иначе
         # одинаковый вопрос-ответ дублировался бы на каждой странице пагинации.
         faq_html, faq_ld = faq_block(hub, lang, display_name) if page_num == 1 else ("", None)
+        parent_crumbs = []
+        if hub["kind"] == "podborka":
+          ph = hub["parent"]
+          parent_crumbs = [(hub_display_name(ph, lang), SITE_ROOT + lang_path(ph["path"], lang))]
+        related_html = ""
+        if page_num == 1 and hub["kind"] in ("kategoriya", "brend"):
+          rel = related.get((hub["kind"], hub["slug"]), [])[:40]
+          if rel:
+            related_html = hub_grid(strings["podborki_heading"], rel, lang, category_az)
         page_html = render_page(
             title=title + suffix,
             description=(
@@ -1068,8 +1203,10 @@ def run():
             canonical=canonical,
             h1=h1,
             intro_html=intro_html,
-            main_html=f'<div class="grid">{"".join(i[card_key] for i in chunk)}</div>',
-            breadcrumbs=[home_crumb[lang], (display_name, SITE_ROOT + hub_path)]
+            main_html=related_html
+            + f'<div class="grid">{"".join(i[card_key] for i in chunk)}</div>',
+            breadcrumbs=[home_crumb[lang]] + parent_crumbs
+            + [(display_name, SITE_ROOT + hub_path)]
             + ([(f"{strings['page']} {page_num}", canonical)] if page_num > 1 else []),
             offers=[i[offer_key] for i in chunk],
             pagination=pagination_html(hub_path, page_num, total_pages, lang=lang),
@@ -1132,6 +1269,7 @@ def run():
           offers=[i[offer_key]],
           lang=lang,
           alt_links=alt_links,
+          stamp=False,
       )
       product_dir = (
           os.path.join(store_dir, "tovar", i["product_slug"]) if lang == "ru"
