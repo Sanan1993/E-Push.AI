@@ -53,3 +53,21 @@ round_date,question_id,engine,cited,info_correct,notes
 2026-10-01,16,chatgpt,no,,аптеки Dərmançı Medical City + Skin Store
 2026-10-01,17,chatgpt,no,,
 2026-10-01,18,chatgpt,yes,yes,az верный адрес 7K источник Sosial Tərəfdaş сам отметил расхождение с Yandex (9)
+2026-10-03,1,chatgpt,no,,конкуренты: Koreiko Namu Rossmann Olivia Skin Store KGlow
+2026-10-03,2,chatgpt,no,,РЕГРЕСС: r2 цитировали напрямую r3 через Yandex теперь вообще нет; конкуренты Olivia Hazi Aslanov Mersi NEED COSMETICS Utopia Bantik
+2026-10-03,3,chatgpt,yes,yes,источник сайт Makiyaj; ~9300 товаров; часы 09:00-21:00 (обновление часов дошло до ChatGPT); пример цены Huda Beauty взят из чужого каталога Daraq
+2026-10-03,4,chatgpt,no,,конкуренты Kiko Milano Bahar BODYCARE Namu Sabina
+2026-10-03,5,chatgpt,no,,Rossmann Olivia Bravo Wolt Pakstore
+2026-10-03,6,chatgpt,no,,Parfume Galaxy Daraq RD Cosmetics Flormar
+2026-10-03,7,chatgpt,no,,BODYCARE Bahar Arzum Flormar Olivia Rossmann
+2026-10-03,8,chatgpt,no,,Kiko Bahar Pomada Namu Olivia Daraq; первая отправка не прошла повторил
+2026-10-03,9,chatgpt,no,,ответил только встречным вопросом (район/метро) без списка магазинов
+2026-10-03,10,chatgpt,no,,Rossmann Euphoria ADELIA RD Beauty Store Baku Golden Rose
+2026-10-03,11,chatgpt,no,,Bazarstore Tamstore Rossmann (товар+цена на SKU); первая отправка не прошла
+2026-10-03,12,chatgpt,no,,BODYCARE Glam AF Mall Beautech Namu; у нас есть бренд-хаб Anua и 21 страница товара но OpenAI их ещё не обходил
+2026-10-03,13,chatgpt,no,,ожидаемо другой район
+2026-10-03,14,chatgpt,no,,Rossmann Hippo Baby Bahar Cosmetic Corner Olivia Zeka
+2026-10-03,15,chatgpt,yes,yes,верный адрес 7K источник Sosial Tərəfdaş и сам отметил расхождение с Yandex (дом 9)
+2026-10-03,16,chatgpt,no,,аптеки PharmaStore AVIS Medical City + Skin Store Kutanoz
+2026-10-03,17,chatgpt,no,,цены Olivia Rossmann Wolt
+2026-10-03,18,chatgpt,yes,yes,az верный адрес 7K источник Sosial Tərəfdaş сам отметил Yandex (дом 9)
