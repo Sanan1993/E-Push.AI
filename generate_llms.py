@@ -369,7 +369,53 @@ def _smart_case(token):
   return token[:1] + token[1:].lower().replace("̇", "")
 
 
-def build_display_title(raw_title, info, lang="ru", category_az=None):
+# Складские названия смешивают русскую транслитерацию ("Dlya Lica"), азербайджан-
+# ские слова ("Uchun", "Dirnaq Boyasi") и КАПС. Покупатель пишет "для лица",
+# "лак для ногтей" — приводим к нормальным словам. Только однозначные слова.
+_TRANSLIT_RU = {
+    "dlya": "для", "krem": "крем", "kremi": "кремы", "maska": "маска",
+    "maski": "маски", "balzam": "бальзам", "skrab": "скраб", "pomada": "помада",
+    "blesk": "блеск", "lica": "лица", "volos": "волос", "dusha": "душа",
+    "tela": "тела", "ruk": "рук", "gub": "губ", "glaz": "глаз",
+    "shampun": "шампунь", "sprey": "спрей", "loson": "лосьон", "tonik": "тоник",
+    "tush": "тушь", "karandash": "карандаш", "maslo": "масло", "i": "и",
+    "pitaniye": "питание", "dezodorant": "дезодорант", "pena": "пена",
+    "penka": "пенка",
+}
+_ALWAYS_LOWER = {"для", "и", "лица", "рук", "волос", "душа", "тела", "губ", "глаз",
+                 "və", "üçün", "üz", "saç", "duş", "bədən", "dodaq", "göz", "əl"}
+# В азербайджанском порядок слов обратный ("üz üçün krem"), поэтому пословная
+# подстановка портит текст — переводим только союз, остальное не трогаем.
+_TRANSLIT_AZ = {"i": "və"}
+_LOWER_WORDS = {"for", "and", "the", "de", "di", "up", "on", "of", "in", "to", "with"}
+_TITLE_WORDS = {"oil", "sun", "dry", "lip", "eye", "gel", "top", "new", "hair"}
+
+
+def _normalize_tokens(tokens, lang):
+  table = _TRANSLIT_AZ if lang == "az" else _TRANSLIT_RU
+  out, n = [], 0
+  while n < len(tokens):
+    t = tokens[n]
+    key = t.lower().strip(",.;:")
+    nxt = tokens[n + 1].lower().strip(",.;:") if n + 1 < len(tokens) else ""
+    if key == "dirnaq" and nxt == "boyasi":
+      out.append("dırnaq boyası" if lang == "az" else "лак для ногтей")
+      n += 2
+      continue
+    if key in table:
+      word = table[key]
+      out.append(word.capitalize() if t[:1].isupper() and word not in _ALWAYS_LOWER else word)
+    elif t.isupper() and key in _LOWER_WORDS:
+      out.append(key)
+    elif t.isupper() and key in _TITLE_WORDS:
+      out.append(key.capitalize())
+    else:
+      out.append(t)
+    n += 1
+  return out
+
+
+def build_display_title(raw_title, info, lang="ru", category_az=None, normalize=True):
   """Название для витрины и ИИ: бренд + модель, объём, тип товара.
 
   Только факты из справочника (бренд, категория, объём) — строку названия
@@ -390,6 +436,8 @@ def build_display_title(raw_title, info, lang="ru", category_az=None):
     # бренд нигде в названии не упомянут — добавим его в начало
     prefix_brand = stripped or _letters_only(brand) not in _letters_only(cleaned)
 
+  if normalize:
+    tokens = _normalize_tokens(tokens, lang)
   model = " ".join(_smart_case(t) for t in tokens).strip(" ,.-/")
   parts = [brand] if brand and prefix_brand else []
   if model:
@@ -914,6 +962,9 @@ def run():
         "gtin": digits if is_valid_gtin(digits) else "",
         "display": build_display_title(raw_title, info),
         "display_az": build_display_title(raw_title, info, "az", category_az),
+        # старое (до чистки) название — только для slug, чтобы URL страниц
+        # товаров, уже отправленные в IndexNow, не менялись
+        "display_legacy": build_display_title(raw_title, info, normalize=False),
         "info": info,
         "brand": brand,
         "category": (info.get("category") or "").split(",")[0].strip(),
@@ -939,10 +990,10 @@ def run():
     # generic-запросы у конкурентов (см. tools/geo_tracker round 3, 2026-10-01).
     # Если название уже начинается с бренда (обычный случай), не дублируем
     # бренд в slug второй раз (иначе получалось "3w-clinic-3w-clinic-...").
-    has_brand_prefix = i["brand"] and i["display"].lower().startswith(i["brand"].lower())
+    has_brand_prefix = i["brand"] and i["display_legacy"].lower().startswith(i["brand"].lower())
     base_slug = slugify(
-        i["display"] if not i["brand"] or has_brand_prefix
-        else f"{i['brand']} {i['display']}"
+        i["display_legacy"] if not i["brand"] or has_brand_prefix
+        else f"{i['brand']} {i['display_legacy']}"
     )
     i["product_slug"] = unique_slug(base_slug, used_product_slugs)
     i["product_path"] = f"/stores/{STORE_SLUG}/tovar/{i['product_slug']}/"
