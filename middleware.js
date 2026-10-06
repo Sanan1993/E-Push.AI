@@ -9,8 +9,12 @@ const BOT_PATTERNS = [
   /Google-Extended/i, /Googlebot/i, /GoogleOther/i,
   /Bingbot/i, /CCBot/i, /Applebot/i, /YandexBot/i,
   /facebookexternalhit/i, /DuckDuckBot/i, /DuckAssistBot/i, /ExaSearchBot/i,
-  /Bytespider/i, /cohere-ai/i,
+  /Bytespider/i, /cohere-ai/i, /HeadlessChrome/i,
 ];
+
+// Мои собственные проверки живого сайта (curl/скрипты) — помечаются этим
+// User-Agent'ом и пишутся отдельным типом, чтобы не путаться с посетителями.
+const SELF_CHECK_UA = /E-Push-SelfCheck/i;
 
 // НЕ полная/официальная база облачных диапазонов (такой бесплатно и без
 // внешнего API не существует) — эвристический, растущий список, куда
@@ -25,7 +29,7 @@ const DATACENTER_IP_PREFIXES = [
   '34.', '35.', '52.', '54.', // AWS EC2 / Google Cloud compute
   '138.68.', '159.65.', '164.90.', '167.71.', '178.62.', // DigitalOcean
   '5.9.', '78.46.', '88.99.', '94.130.', '116.202.', '135.181.', // Hetzner
-  '51.68.', '54.36.', '137.74.', '141.94.', '145.239.', '151.80.', // OVH
+  '51.68.', '54.36.', '137.74.', '141.94.', '145.239.', '151.80.', '51.254.', '51.255.', // OVH
   // Google-owned 172.253.0.0/16 (по goog.json, но не в cloud.json и не в
   // списках краулеров): 03.10.2026 пришёл Chrome/Windows из Charleston без
   // реферера и был ошибочно записан как visit-real.
@@ -50,7 +54,9 @@ export default function middleware(request, event) {
   const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim();
 
   let type;
-  if (isBot) {
+  if (SELF_CHECK_UA.test(ua)) {
+    type = 'self';
+  } else if (isBot) {
     type = 'bot';
   } else if (looksHuman && isDatacenterIp(ip)) {
     // Настоящие браузерные заголовки, но IP из облака/хостинга — скорее всего,
