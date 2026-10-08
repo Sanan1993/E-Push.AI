@@ -53,11 +53,22 @@ export default function middleware(request, event) {
   const looksHuman = request.headers.get('sec-fetch-mode') === 'navigate';
   const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim();
 
+  // Chrome заранее подгружает ссылки из выдачи Google через свой приватный
+  // прокси (IP *.fetch.tunnel.googlezip.net, реферер google.com) и помечает
+  // такие запросы заголовком Sec-Purpose: prefetch. Это показ нашей страницы
+  // в поиске реальному человеку, но ещё не визит: если он кликнет, страница
+  // откроется из кэша и сюда не придёт.
+  const purpose = (
+    request.headers.get('sec-purpose') || request.headers.get('purpose') || ''
+  ).toLowerCase();
+
   let type;
   if (SELF_CHECK_UA.test(ua)) {
     type = 'self';
   } else if (isBot) {
     type = 'bot';
+  } else if (purpose.includes('prefetch')) {
+    type = 'search-prefetch';
   } else if (looksHuman && isDatacenterIp(ip)) {
     // Настоящие браузерные заголовки, но IP из облака/хостинга — скорее всего,
     // бот с полноценным браузерным движком (headless Chrome и т.п.), а не
