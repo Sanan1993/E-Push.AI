@@ -1,6 +1,7 @@
 import collections
 import csv
 import datetime
+import hashlib
 import html
 import io
 import json
@@ -48,6 +49,15 @@ STORE_SAME_AS = []
 # подвале каждой страницы: "регулярно обновляемые данные" — подтверждённо
 # значимый для AI-цитирования сигнал, раньше был виден только на /tseny/.
 GENERATION_TIMESTAMP = ""
+# Хеш содержимого каждой страницы этого прогона (без метки времени) — по нему
+# в sitemap ставится реальная дата последнего изменения, а не "сегодня" всем.
+PAGE_HASHES = {}
+LASTMOD_STATE = os.path.join("data", "sitemap_lastmod.tsv")
+
+
+def _remember_page(url, page_html):
+  body = page_html.replace(GENERATION_TIMESTAMP, "") if GENERATION_TIMESTAMP else page_html
+  PAGE_HASHES[url] = hashlib.sha1(body.encode("utf-8")).hexdigest()[:16]
 STORE_PHONE_E164 = f"+{WHATSAPP_NUMBER}"
 STORE_PHONE_DISPLAY = (
     f"+{WHATSAPP_NUMBER[:3]} {WHATSAPP_NUMBER[3:5]} {WHATSAPP_NUMBER[5:8]}"
@@ -1268,6 +1278,7 @@ def run():
         )
         with open(os.path.join(hub_dir, filename), "w", encoding="utf-8", newline="\n") as f:
           f.write(page_html)
+        _remember_page(canonical, page_html)
         sitemap_urls.append(canonical)
 
   # 2. Персональная страница на каждый товар: один URL = одно название +
@@ -1329,6 +1340,7 @@ def run():
       os.makedirs(product_dir, exist_ok=True)
       with open(os.path.join(product_dir, "index.html"), "w", encoding="utf-8", newline="\n") as f:
         f.write(page_html)
+      _remember_page(canonical, page_html)
       sitemap_urls.append(canonical)
   print(f"Страниц товаров: {len(items)} x 2 языка = {len(items) * 2}")
 
@@ -1364,6 +1376,7 @@ def run():
     )
     with open(os.path.join(prices_dir, "index.html"), "w", encoding="utf-8", newline="\n") as f:
       f.write(prices_html)
+    _remember_page(prices_canonical, prices_html)
     sitemap_urls.append(prices_canonical)
 
   home_alt_links = [("ru", STORE_CANONICAL_URL), ("az", az_home_url)]
@@ -1392,6 +1405,7 @@ def run():
         faq_html=home_faq_html,
         extra_ld=[home_faq_ld],
     )
+    _remember_page(STORE_CANONICAL_URL if lang == "ru" else az_home_url, home_html)
     if lang == "ru":
       # Главная — canonical-адрес витрины, дублируется и в корень, и в папку
       # магазина (см. STORE_CANONICAL_URL выше). AZ-версии корневого дубля не
@@ -1484,12 +1498,29 @@ def run():
 
   # Только реальные страницы. "/" (редирект) и служебные файлы верификации
   # в sitemap не нужны — они лишь плодили "обнаружена, не проиндексирована".
-  # lastmod — все страницы реально перегенерированы в этот самый прогон,
-  # так что честно ставить одну и ту же дату всем: это прямой сигнал
-  # краулерам "здесь всё свежее", а не просто список URL без контекста.
+  # lastmod = дата, когда содержимое страницы последний раз реально менялось
+  # (хеш без метки времени сравнивается с прошлым прогоном, состояние лежит в
+  # data/sitemap_lastmod.tsv и коммитится cron'ом вместе с сайтом). Раньше
+  # всем 19 тыс. адресов ставилась сегодняшняя дата — поисковики видят, что
+  # такая дата ничего не значит, и перестают ей верить.
   sitemap_date = datetime.datetime.now().strftime("%Y-%m-%d")
+  previous = {}
+  if os.path.exists(LASTMOD_STATE):
+    with open(LASTMOD_STATE, encoding="utf-8") as f:
+      for line in f:
+        parts = line.rstrip("\n").split("\t")
+        if len(parts) == 3:
+          previous[parts[0]] = (parts[1], parts[2])
+  lastmod = {}
+  for u in sitemap_urls:
+    h = PAGE_HASHES.get(u, "")
+    old = previous.get(u)
+    lastmod[u] = old[1] if old and h and old[0] == h else sitemap_date
+  with open(LASTMOD_STATE, "w", encoding="utf-8", newline="\n") as f:
+    for u in sorted(lastmod):
+      f.write(f"{u}\t{PAGE_HASHES.get(u, '')}\t{lastmod[u]}\n")
   sitemap_lines = "\n".join(
-      f"  <url><loc>{u}</loc><lastmod>{sitemap_date}</lastmod></url>" for u in sitemap_urls
+      f"  <url><loc>{u}</loc><lastmod>{lastmod[u]}</lastmod></url>" for u in sitemap_urls
   )
   sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
