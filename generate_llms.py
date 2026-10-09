@@ -27,13 +27,15 @@ INDEXNOW_KEY = "8b2effb1df567e183bb7dc114cefcb35"
 # файл) — без canonical-тега Google видит дубликат контента и не знает, что
 # из этого индексировать, поэтому вообще не индексирует ни одну версию.
 STORE_CANONICAL_URL = f"{SITE_ROOT}/stores/{STORE_SLUG}/"
-# Подтверждён владельцем 2026-09-26 (ChatGPT цитировал ещё один адрес — №9 с
-# другим телефоном — он неверный).
-STORE_ADDRESS = "ул. Илгара Зульфигарова, 7K"
-# Азербайджанская форма того же адреса (имя/фамилия транслитерированы по
-# стандартной азербайджанской орфографии: Илгар -> İlqar, Зульфигаров ->
-# Zülfüqarov; "7K" не переводится, это номер дома).
-STORE_ADDRESS_AZ = "İlqar Zülfüqarov küç., 7K"
+# Адрес как в карточке магазина в Google Картах, подтверждён 2026-10-10.
+# Раньше на сайте стоял "ул. Илгара Зульфигарова, 7K" — Google такого адреса
+# не знает, и ИИ из-за расхождения сайта с Картами принимал карточку за
+# "другой магазин". Название, адрес и телефон должны совпадать везде.
+STORE_ADDRESS = "ул. Худу Мамедова, 38"
+STORE_ADDRESS_AZ = "Xudu Məmmədov küç., 38"
+# Метка карточки в Google Картах и ссылка на неё по постоянному CID.
+STORE_GEO = (40.3700622, 49.9557324)
+STORE_MAP_URL = "https://maps.google.com/?cid=3095303606787661578"
 # Подтверждено владельцем 2026-09-30 (ежедневно, без выходного дня не уточнён
 # отдельно — обычный режим для такого магазина).
 STORE_HOURS_DISPLAY = "09:00–21:00"
@@ -47,6 +49,7 @@ STORE_SAME_AS = [
     # Подтверждено владельцем проекта 2026-10-10.
     "https://www.instagram.com/makiyaj.cosmetics/",
     "https://birmarket.az/merchant/4290-makiyaj-cosmetics",
+    STORE_MAP_URL,
 ]
 # Момент генерации текущего запуска — один и тот же для всех страниц одного
 # прогона (не пересчитывается на каждую страницу отдельно), показывается в
@@ -639,6 +642,12 @@ def render_page(title, description, canonical, h1, intro_html, main_html,
           "addressLocality": "Baku",
           "addressCountry": "AZ",
       },
+      "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": STORE_GEO[0],
+          "longitude": STORE_GEO[1],
+      },
+      "hasMap": STORE_MAP_URL,
   }
   if STORE_SAME_AS:
     store_ld["sameAs"] = STORE_SAME_AS
