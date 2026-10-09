@@ -110,3 +110,12 @@ round_date,question_id,engine,cited,info_correct,notes
 2026-10-03-L,49,chatgpt,no,,цену в Баку подтвердить не смог; взял Яндекс Маркет и l.arzumbeauty.com
 2026-10-03-L,50,chatgpt,no,,мелкие магазины Araz Market; Sev-Al; Home Market с карточкой SKU и ценой
 2026-10-03-L,51,chatgpt,no,,Olivia; Kontakt; Nariva через Wolt
+2026-10-09,52,google-ai-mode,yes,yes,источник наша страница товара; адрес 7K; WhatsApp; цена ~4.05 AZN; рядом Birmarket
+2026-10-09,53,google-ai-mode,no,,Birmarket; Neptun; Bravo; Instagram macsys_az
+2026-10-09,19,google-ai-mode,yes,yes,Makiyaj первым в списке магазинов; источник наша подборка kraska-dlya-volos-ollin-professional; ~7 AZN; WhatsApp
+2026-10-09,22,google-ai-mode,yes,yes,назван среди магазинов косметики у метро Ази Асланов; рядом Birmarket и рынки
+2026-10-09,27,google-ai-mode,yes,yes,назван с ценой 2.80 AZN и WhatsApp; рядом Rossmann Birmarket Olivia
+2026-10-09,41,google-ai-mode,no,,Rossmann; Kepro; Arzum; BODYCARE; Daraq; Olivia; Birmarket
+2026-10-09,19,gemini-flash-lite,no,,без входа; Birmarket; Olivia
+2026-10-09,52,gemini-flash-lite,no,,без входа; Birmarket; рынки Садарак/Бина
+2026-10-09,22,gemini-flash-lite,no,,без входа; Birmarket; рынки
