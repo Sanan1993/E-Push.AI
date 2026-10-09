@@ -119,3 +119,50 @@ round_date,question_id,engine,cited,info_correct,notes
 2026-10-09,19,gemini-flash-lite,no,,без входа; Birmarket; Olivia
 2026-10-09,52,gemini-flash-lite,no,,без входа; Birmarket; рынки Садарак/Бина
 2026-10-09,22,gemini-flash-lite,no,,без входа; Birmarket; рынки
+2026-10-09,1,google-ai-mode,no,,BODYCARE; Koreiko и др.
+2026-10-09,2,google-ai-mode,no,,Bahar Store; Olivia; Mersi у метро
+2026-10-09,3,google-ai-mode,yes,yes,назван как продавец Birmarket: каталог и цены оттуда; наш сайт не источник
+2026-10-09,4,google-ai-mode,no,,Adore (Ideal/Sabina) и сети
+2026-10-09,5,google-ai-mode,no,,Rossmann; Olivia
+2026-10-09,6,google-ai-mode,no,,Koreiko и др.
+2026-10-09,7,google-ai-mode,no,,Olivia; Rossmann
+2026-10-09,8,google-ai-mode,no,,Emporium Port Baku и сети
+2026-10-09,9,google-ai-mode,no,,Sədərək/Binə; Bahar; Utopia (детектор ложно ловил az-слово makiyaj)
+2026-10-09,10,google-ai-mode,no,,Golden Rose; Rossmann; Bahar; KIKO
+2026-10-09,11,google-ai-mode,no,,Olivia и сети
+2026-10-09,12,google-ai-mode,no,,Olivia; Koreiko
+2026-10-09,13,google-ai-mode,no,,парфюмерия Хатаи
+2026-10-09,14,google-ai-mode,no,,Bravo и детские
+2026-10-09,15,google-ai-mode,yes,no,НЕВЕРНО: другой магазин MAKİYAJ ул. Худу Мамедова 38 у м. Ахмедлы из Google Maps; нашего нет в Картах
+2026-10-09,16,google-ai-mode,no,,аптеки
+2026-10-09,17,google-ai-mode,no,,общие диапазоны цен
+2026-10-09,18,google-ai-mode,yes,yes,İlqar Zülfüqarov 7 (в картах ev 9); тел верный; часы 09:30-21:00; Instagram @makiyaj.cosmetics
+2026-10-09,20,google-ai-mode,yes,no,назван с адресом 7K но карточка рейтинга 3.7 от другого магазина (20 Nazim Hacıyev)
+2026-10-09,21,google-ai-mode,yes,yes,только наша страница в источниках (Vercel); имя не названо
+2026-10-09,23,google-ai-mode,no,,Daraq и парфюмерные
+2026-10-09,24,google-ai-mode,yes,yes,например в сети Makiyaj Cosmetics 13.50-17.69 AZN
+2026-10-09,25,google-ai-mode,yes,yes,Makiyaj Cosmetics: Topface Skin Editor 12 AZN; WhatsApp
+2026-10-09,26,google-ai-mode,no,,Olivia; BODYCARE
+2026-10-09,28,google-ai-mode,no,,салонные магазины; Birmarket
+2026-10-09,29,google-ai-mode,no,,фирменные Golden Rose; онлайн
+2026-10-09,30,google-ai-mode,no,,Olivia; Rossmann
+2026-10-09,31,google-ai-mode,no,,CONCEPT и др.
+2026-10-09,32,google-ai-mode,no,,аптеки
+2026-10-09,33,google-ai-mode,no,,аптеки; Arzum
+2026-10-09,34,google-ai-mode,no,,аптеки; онлайн
+2026-10-09,35,google-ai-mode,no,,наборы; сертификаты
+2026-10-09,36,google-ai-mode,no,,бутики; рынки
+2026-10-09,37,google-ai-mode,no,,супермаркеты; аптеки
+2026-10-09,38,google-ai-mode,no,,общий совет K-beauty
+2026-10-09,39,google-ai-mode,no,,общий совет
+2026-10-09,40,google-ai-mode,no,,aptek şəbəkələri
+2026-10-09,42,google-ai-mode,no,,бутики белья; ТЦ
+2026-10-09,43,google-ai-mode,no,,сети; nail-шоурумы
+2026-10-09,44,google-ai-mode,no,,
+2026-10-09,45,google-ai-mode,no,,
+2026-10-09,46,google-ai-mode,no,,
+2026-10-09,47,google-ai-mode,no,,
+2026-10-09,48,google-ai-mode,no,,
+2026-10-09,49,google-ai-mode,no,,
+2026-10-09,50,google-ai-mode,no,,
+2026-10-09,51,google-ai-mode,no,,
