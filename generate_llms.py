@@ -46,6 +46,7 @@ STORE_HOURS_SCHEMA = "Mo-Su 09:00-21:00"
 STORE_SAME_AS = [
     # Подтверждено владельцем проекта 2026-10-10.
     "https://www.instagram.com/makiyaj.cosmetics/",
+    "https://birmarket.az/merchant/4290-makiyaj-cosmetics",
 ]
 # Момент генерации текущего запуска — один и тот же для всех страниц одного
 # прогона (не пересчитывается на каждую страницу отдельно), показывается в
